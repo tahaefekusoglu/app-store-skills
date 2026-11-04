@@ -5,7 +5,7 @@ axios, fetch, dio default), handling session loss (401), showing raw error text 
 offline queue / retry.
 
 Connectivity never being monitored → network NW-12 (not repeated here).
-Standard library only (Python 3.8+); does NOT write to the project. "Not applicable" for an app with no network.
+Standard library only (Python 3.9+); does NOT write to the project. "Not applicable" for an app with no network.
 
     python3 -I nc_scan.py <project_root> [--json]
 """

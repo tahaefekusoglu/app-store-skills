@@ -89,7 +89,8 @@ launches → is it running, are any files gone or shrunk by more than half
 (excluding caches and snapshots iOS regenerates), did `--verify`
 pass. `--seed` / `--verify` commands receive the environment variables `APPTEST_UDID`,
 `APPTEST_BUNDLE`, `APPTEST_CONTAINER`. Exit
-code: 0 if there is no problem.
+code: 0 no problem found · 1 a problem was found · 3 could not check (the data folder could not be
+read, or it held no data before the upgrade, so the tour proves nothing).
 
 Data entry: the most reliable way is the project's own device tour (the integration / UI test
 at the old version's tag enters the demo data). When entering by hand, use

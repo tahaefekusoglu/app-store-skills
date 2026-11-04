@@ -14,7 +14,9 @@ monetization → network → layout-a11y → locale-time → data-integrity →
 input-actions → content-safety → product-fit.
 Findings at the same place merge only if they are the SAME ISSUE (SAME_ISSUE); different issues stay separate (CONVENTIONS §2).
 Exit: 0 scan complete · 2 wrong usage · 3 scan incomplete (script missing or a member errored).
-The number of findings does not change the exit code.
+The number of findings does not change the exit code. A scan that read only part of some files still exits 0.
+JSON: `execution_complete` = every member ran; `coverage_partial` = what was not read in full;
+`complete` = both, so only true when nothing failed and nothing was cut short.
 """
 from __future__ import annotations
 
@@ -70,6 +72,26 @@ def dedupe_key(evidence: str) -> str | None:
     return first if ":" in first and first.split(":")[-1].isdigit() else None
 
 
+def invalid_report(data) -> str | None:
+    """What is wrong with a member's report, or None. A broken member is reported; it must not stop the others."""
+    if not isinstance(data, dict) or not isinstance(data.get("findings"), list):
+        return "no findings list"
+    for i, f in enumerate(data["findings"]):
+        if not isinstance(f, dict):
+            return f"finding {i} is not an object"
+        if not isinstance(f.get("id"), str) or not f["id"]:
+            return f"finding {i} has no id"
+        if f.get("severity") not in ORDER:
+            return f"finding {i} has an unknown severity"
+        for k in ("title", "evidence", "note"):
+            if not isinstance(f.get(k, ""), str):
+                return f"finding {i}: {k} is not text"
+    for k, kind in (("suppressed", dict), ("suppressed_risk", list), ("skipped", list), ("truncated", list)):
+        if not isinstance(data.get(k, kind()), kind):
+            return f"{k} has the wrong type"
+    return None
+
+
 def run(script: str, root: str, extra: list[str]) -> tuple[dict | None, str, float]:
     t0 = time.time()
     try:
@@ -84,8 +106,9 @@ def run(script: str, root: str, extra: list[str]) -> tuple[dict | None, str, flo
     except ValueError:
         # technology not recognized: the script prints plain text. Empty output is not "clean".
         return None, r.stdout.strip()[:200] or "script produced no output", time.time() - t0
-    if not isinstance(data, dict) or not isinstance(data.get("findings"), list):
-        return None, "script output is not in the expected format", time.time() - t0
+    bad = invalid_report(data)
+    if bad:
+        return None, f"script output is not in the expected format: {bad}", time.time() - t0
     return data, "", time.time() - t0
 
 
@@ -144,9 +167,11 @@ def main(argv=None):
             if key and key not in seen:
                 seen[key] = f
     merged.sort(key=lambda f: (ORDER.get(f["severity"], 9), f["id"]))
+    partial = sorted({x for r in results.values() for x in r["partial"]})
     if a.json:
         json.dump({"root": os.path.abspath(a.root), "members": results, "findings": merged,
-                   "problems": problems, "complete": not problems}, sys.stdout, ensure_ascii=False, indent=1)
+                   "problems": problems, "execution_complete": not problems, "coverage_partial": partial,
+                   "complete": not problems and not partial}, sys.stdout, ensure_ascii=False, indent=1)
         print()
         return 3 if problems else 0
     if results and all((r["error"] or "").startswith("Not applicable") for r in results.values()):
@@ -160,6 +185,8 @@ def main(argv=None):
         if f["id"] == "SR-09":
             print(f"> **{f['title']}** {f.get('note', '')}\n")
     print("**Summary:** " + " · ".join(f"{k}: {v}" for k, v in cnt.items()) + "\n")
+    if partial:
+        print("**Partial scan:** " + "; ".join(partial) + "\n")
     print("| Member | Candidates | Time | Note |\n|---|---|---|---|")
     for code, r in results.items():
         note = r["error"] or ""

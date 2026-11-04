@@ -6,7 +6,7 @@ duplicate records (unique constraint, idempotency key), (3) existing rapid-input
 code that makes several writes without a transaction.
 
 A button open to a second tap mid-operation → input-actions IA-10 (not repeated here).
-Standard library only (Python 3.8+); does NOT write to the project.
+Standard library only (Python 3.9+); does NOT write to the project.
 
     python3 -I ri_scan.py <project_root> [--json]
 """

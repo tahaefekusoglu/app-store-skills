@@ -47,8 +47,11 @@ TRANSIENT = ("Library/SplashBoard/", "Library/Caches/", "tmp/", "Library/Saved A
 
 
 def listing(path):
-    out = {}
-    for d, _dirs, files in os.walk(path):
+    """({relative file: size}, [what could not be read]). A folder that cannot be read is not an empty one."""
+    out, unread = {}, []
+    if not path or not os.path.isdir(path):
+        return out, [path or "(no container path)"]
+    for d, _dirs, files in os.walk(path, onerror=lambda e: unread.append(str(e.filename))):
         for f in files:
             p = os.path.join(d, f)
             if os.path.relpath(p, path).startswith(TRANSIENT):
@@ -56,8 +59,13 @@ def listing(path):
             try:
                 out[os.path.relpath(p, path)] = os.path.getsize(p)
             except OSError:
-                pass
-    return out
+                unread.append(p)
+    return out, unread
+
+
+def could_not_check(why):
+    print(f"\n## upgrade tour\n- could not check: {why}")
+    return 3
 
 
 def version_of(app):
@@ -101,14 +109,20 @@ def main(argv=None):
     else:
         input("Enter realistic, FULL demo data in the old version, then press Enter… ")
     sh("xcrun", "simctl", "terminate", a.udid, a.bundle, check=False)
-    before = listing(env["APPTEST_CONTAINER"])
+    before, unread = listing(env["APPTEST_CONTAINER"])
+    if unread:
+        return could_not_check("cannot read the old version's data folder: " + ", ".join(unread[:5]))
+    if not before:
+        return could_not_check("no data files before the upgrade, so the tour would prove nothing: enter demo data first")
     sh("xcrun", "simctl", "install", a.udid, a.new)  # install over: the container is kept
     sh("xcrun", "simctl", "launch", a.udid, a.bundle)
     time.sleep(a.wait)
     running = sh("xcrun", "simctl", "spawn", a.udid, "launchctl", "list", check=False)
     alive = a.bundle in running
     after_path = container(a.udid, a.bundle)
-    after = listing(after_path)
+    after, unread = listing(after_path)
+    if unread:
+        return could_not_check("cannot read the new version's data folder: " + ", ".join(unread[:5]))
     gone = sorted(set(before) - set(after))
     shrunk = sorted(k for k in before if k in after and after[k] < before[k] * 0.5 and before[k] > 4096)
     ok_verify = run_hook(a.verify, {**env, "APPTEST_CONTAINER": after_path}) if a.verify else None

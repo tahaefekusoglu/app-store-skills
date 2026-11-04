@@ -135,7 +135,7 @@ temporary simulator, lock, ledger, undo):
 
 ```sh
 U=$(python3 -I ~/.claude/skills/apptest/shared/sim_session.py create --project <root> [--status-bar] [--software-keyboard])
-python3 -I ~/.claude/skills/apptest/shared/sim_session.py cleanup --project <root>
+python3 -I ~/.claude/skills/apptest/shared/sim_session.py cleanup --project <root> --udid "$U"
 ```
 
 It reports findings at three confidences: **certain** (explicit in configuration),
@@ -283,7 +283,7 @@ suppressed, this line also says "(rejection risk)"; the warning is given once, w
   written. With neither, the item is a SUGGESTION.
 - A SKILL.md stays under 400 lines; details in `references/`; scripts under `scripts/`, standard
   Python only (`python3 -I`), never writing to the project.
-- **Portability (every computer):** scripts are written for Python 3.8+ with the standard library
+- **Portability (every computer):** scripts are written for Python 3.9+ with the standard library
   only; static scans run on macOS, Linux and Windows (simulator steps are macOS-only by nature).
   Rules: `from __future__ import annotations`; no runtime `list[str]` / `X | None` / `removeprefix`
   / `match`; file paths compare with "/" (`p.rel` and `p.files` ensure this); every text file opens

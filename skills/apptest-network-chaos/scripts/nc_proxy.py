@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """apptest-network-chaos — fault-injecting reverse proxy. Standard library only
-(Python 3.8+); runs on any operating system.
+(Python 3.9+); runs on any operating system.
 
 The app (if its base URL can change in tests) is pointed at http://localhost:<port>; the proxy forwards
 requests to --upstream (a MOCK or STAGING server, NC-P1) and injects faults into requests matching a rule.

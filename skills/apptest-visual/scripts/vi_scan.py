@@ -3,7 +3,7 @@
 tests, size of baselines committed to the repo, hooks that pin the image (animation, clock,
 status bar), theme / language / text / device matrix suggestion.
 
-Standard library only (Python 3.8+); does NOT write to the project.
+Standard library only (Python 3.9+); does NOT write to the project.
 
     python3 -I vi_scan.py <project_root> [--json]
 """

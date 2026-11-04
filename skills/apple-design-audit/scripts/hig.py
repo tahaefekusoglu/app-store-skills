@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """apple-design — reads Apple's Human Interface Guidelines from the official site (rule text is not copied into the skill).
 
-Standard library only (Python 3.8+); does NOT write to the project. Pages read are stored under ~/.cache/apptest/hig/:
+Standard library only (Python 3.9+); does NOT write to the project. Pages read are stored under ~/.cache/apptest/hig/:
 with no internet, the old copy is given with a "read on this date" warning; with no copy at all it plainly says
 "could not read" (exit 3); no rule is made up.
 

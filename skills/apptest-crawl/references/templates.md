@@ -18,7 +18,7 @@ library;
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-final skipLabel = RegExp(r'(?i)delete|remove|erase|buy|purchase|subscribe|log ?out|sign ?out|account|share|sil|kaldır|satın|abone|çıkış|hesab|paylaş|löschen|entfernen|kaufen|abonnieren|abmelden|konto|teilen|elimina|cancella|rimuovi|acquista|abbonati|esci|disconnetti|condividi|borrar|quitar|comprar|suscrib|cerrar sesión|salir|cuenta|compartir|supprimer|retirer|acheter|abonner|déconnexion|compte|partager|excluir|remover|apagar|assinar|sair|conta');  // terms.py SKIP_LABELS: 7 languages
+final skipLabel = RegExp(r'delete|remove|erase|buy|purchase|subscribe|log ?out|sign ?out|account|share|sil|kaldır|satın|abone|çıkış|hesab|paylaş|löschen|entfernen|kaufen|abonnieren|abmelden|konto|teilen|elimina|cancella|rimuovi|acquista|abbonati|esci|disconnetti|condividi|borrar|quitar|comprar|suscrib|cerrar sesión|salir|cuenta|compartir|supprimer|retirer|acheter|abonner|déconnexion|compte|partager|excluir|remover|apagar|assinar|sair|conta', caseSensitive: false);  // terms.py SKIP_LABELS: 7 languages
 
 List<Offset> targets(WidgetTester t) {
   final dpr = t.view.devicePixelRatio, out = <Offset>[], seen = <String>{};

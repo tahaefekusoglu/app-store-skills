@@ -7,9 +7,9 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         python: ["3.9", "3.13"]
-        include:
-          - os: ubuntu-latest
-            python: "3.8"
+        exclude:
+          - os: ubuntu-latest   # current Ubuntu runners no longer offer Python 3.9
+            python: "3.9"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

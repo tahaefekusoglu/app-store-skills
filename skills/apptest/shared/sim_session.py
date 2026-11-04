@@ -47,6 +47,7 @@ for _st in (sys.stdout, sys.stderr):
         pass
 
 CACHE = os.path.expanduser("~/.cache/apptest")
+KEYBOARD_WAIT = 60  # seconds
 
 
 def sh(*args, check=True) -> str:
@@ -163,7 +164,18 @@ class _KeyboardBook:
         os.makedirs(CACHE, exist_ok=True)
         self.path = os.path.join(CACHE, "keyboard.json")
         self.fh = open(self.path + ".lock", "w")
-        fcntl.flock(self.fh, fcntl.LOCK_EX)
+        # Held across the `defaults` call too, so no tour can slip in between the record and the setting.
+        # The OS releases it if the process dies. A timeout means a stuck tour must not hang this one.
+        deadline = time.time() + KEYBOARD_WAIT
+        while True:
+            try:
+                fcntl.flock(self.fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except OSError:
+                if time.time() >= deadline:
+                    self.fh.close()
+                    raise SystemExit("hardware keyboard setting is busy: another tour holds it; try again")
+                time.sleep(0.05)
         try:
             with open(self.path, encoding="utf-8") as fh:
                 self.data = json.load(fh)
@@ -199,23 +211,26 @@ def device_type(name: str) -> str:
 
 
 def create(a):
+    # The lock comes first: reading the record before it would race with another create.
+    take_lock(a.project, getattr(a, "ttl_hours", 6.0))
     prev = load_state(a.project)
     if prev.get("udid") or prev.get("changes"):
         # Overwriting would lose the old simulator and the setting's old value.
+        _release_lock(a.project)
         raise SystemExit(f"previous session not cleaned ({prev.get('udid') or 'settings record'}): run `cleanup` first; "
                          "if another tour is running, wait for it to finish")
-    take_lock(a.project, getattr(a, "ttl_hours", 6.0))
     try:
         _create(a)
     except BaseException:
         # No half-finished setup: everything this call opened is reverted; if that fails, the record stays.
-        _cleanup(a.project, quiet=True)
+        _cleanup(a.project, quiet=True, udid=getattr(a, "_udid", None))
         raise
 
 
 def _create(a):
     rt = latest_runtime() if a.runtime == "latest" else a.runtime
     udid = sh("xcrun", "simctl", "create", f"apptest-{key_of(a.project)}", device_type(a.device), rt)
+    a._udid = udid  # the only record until a write below succeeds
     st = {"udid": udid, "device": a.device, "runtime": rt, "created": time.strftime("%Y-%m-%d %H:%M"), "changes": []}
     _note_udid(a.project, udid)
     save_state(a.project, st)
@@ -253,7 +268,7 @@ def _create(a):
     except SystemExit:
         pass
     print(udid)
-    print(f"# temporary simulator ready: {a.device} · {rt}{size} · cleanup: sim_session.py cleanup --project {a.project}",
+    print(f"# temporary simulator ready: {a.device} · {rt}{size} · cleanup: sim_session.py cleanup --project {a.project} --udid {udid}",
           file=sys.stderr)
 
 
@@ -268,20 +283,7 @@ def _note_udid(project: str, udid: str):
         os.replace(tmp, path)
 
 
-def _restore_keyboard(ch: dict, udid: str | None) -> str | None:
-    """Error text or None. An old-format record ("old" field) belongs to this session only."""
-    if "old" in ch:
-        old = ch.get("old")
-    else:
-        with _KeyboardBook() as book:
-            holders = [h for h in book.data["holders"] if h != udid]
-            if holders:  # another tour still uses it: it needs the setting
-                book.data["holders"] = holders
-                book.save()
-                return None
-            old = book.data.get("old")
-            book.data = {"holders": [], "old": None}
-            book.save()
+def _write_keyboard(old) -> str | None:
     if old is None:
         rc, err = sh_rc("defaults", "delete", "com.apple.iphonesimulator", "ConnectHardwareKeyboard")
         return None if rc == 0 or "does not exist" in err else err or "defaults delete failed"
@@ -290,9 +292,32 @@ def _restore_keyboard(ch: dict, udid: str | None) -> str | None:
     return None if rc == 0 else err or "defaults write failed"
 
 
-def _cleanup(project: str, quiet: bool = False) -> int:
+def _restore_keyboard(ch: dict, udid: str | None) -> str | None:
+    """Error text or None. An old-format record ("old" field) belongs to this session only.
+    The saved value is dropped only after the setting really changed, and the book stays locked
+    meanwhile, so a failed restore can be retried and a new tour cannot be overridden."""
+    if "old" in ch:
+        return _write_keyboard(ch.get("old"))
+    with _KeyboardBook() as book:
+        holders = [h for h in book.data["holders"] if h != udid]
+        if holders:  # another tour still uses it: it needs the setting
+            book.data["holders"] = holders
+            book.save()
+            return None
+        err = _write_keyboard(book.data.get("old"))
+        if err:
+            return err
+        book.data = {"holders": [], "old": None}
+        book.save()
+    return None
+
+
+def _cleanup(project: str, quiet: bool = False, udid: str | None = None) -> int:
+    lock_path = os.path.join(state_dir(project), "lock")
+    my_lock = _read_lock(lock_path)
     st = load_state(project)
-    udid = st.get("udid")
+    # The lock and the caller also know the UDID: a failed first write must not forget the simulator.
+    udid = st.get("udid") or my_lock.get("udid") or udid
     done, failed = [], []
     remaining = []
     for ch in st.get("changes", []):
@@ -308,14 +333,17 @@ def _cleanup(project: str, quiet: bool = False) -> int:
         else:
             remaining.append(ch)
     st["changes"] = remaining
-    save_state(project, st)
+    if udid:
+        st["udid"] = udid
+    try:
+        save_state(project, st)
+    except OSError as e:
+        failed.append(f"record: {e}")
     if udid:
         rc, err = sh_rc("xcrun", "simctl", "shutdown", udid)  # errors if already off too: delete is the real result
         rc, err = sh_rc("xcrun", "simctl", "delete", udid)
         if rc == 0 or "Invalid device" in err:
             done.append(f"simulator {udid} deleted")
-            st.pop("udid", None)
-            save_state(project, st)
         else:
             failed.append(f"simulator {udid}: {err or f'exit {rc}'}")
     if failed:
@@ -323,11 +351,15 @@ def _cleanup(project: str, quiet: bool = False) -> int:
         if done:
             print("completed: " + ", ".join(done), file=sys.stderr)
         return 1
-    lock = os.path.join(state_dir(project), "lock")
-    if os.path.exists(lock):
-        _release_lock(project)
-        done.append("lock")
+    # Last write BEFORE the lock goes: after that the record may belong to the next session.
     save_state(project, {"changes": []})
+    current = _read_lock(lock_path)
+    if current:
+        if current.get("token") == my_lock.get("token"):
+            _release_lock(project)
+            done.append("lock")
+        else:
+            print("note: the lock now belongs to another session; left in place", file=sys.stderr)
     if not quiet:
         print("cleaned: " + (", ".join(done) if done else "nothing to clean"))
     return 0

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """apptest-visual — compares two screenshot folders (base / new) pixel by pixel.
 
-Standard library only (Python 3.8+, zlib): reads all PNG color types (gray, RGB, palette, gray+alpha,
+Standard library only (Python 3.9+, zlib): reads all PNG color types (gray, RGB, palette, gray+alpha,
 RGBA), 1/2/4/8/16 bit, including interlaced (Adam7). JPEG is not read (a lossy format does not suit pixel
 diffs: capture PNG). Does NOT write to the project; diff images go to the --out folder (OUTSIDE the project, VI-P1).
 

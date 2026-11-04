@@ -4,7 +4,7 @@ visible in code that have a counterpart in the HIG; does not judge "is it pretty
 Each item names its HIG page; for the text: hig.py read <slug>.
 
 Severities are SUGGESTION / INFO only: the HIG is guidance, not a rejection reason. Rejection reasons live in the apptest family.
-Standard library only (Python 3.8+); does NOT write to the project.
+Standard library only (Python 3.9+); does NOT write to the project.
 
     python3 -I hig_scan.py <project_root> [--json]
 """

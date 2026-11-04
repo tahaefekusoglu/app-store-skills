@@ -4,7 +4,7 @@ killed / cold start): transition listeners, draft protection or state restoratio
 the app switcher cover in a locked / sensitive app, re-reading permissions on returning to the foreground,
 memory warnings.
 
-Standard library only (Python 3.8+); does NOT write to the project.
+Standard library only (Python 3.9+); does NOT write to the project.
 
     python3 -I lc_scan.py <project_root> [--json]
 """

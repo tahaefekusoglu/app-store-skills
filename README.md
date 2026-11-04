@@ -41,7 +41,7 @@ This copies the skills to `~/.claude/skills`. It replaces only the folders this 
 
 | For | You need |
 |---|---|
-| Static scans | Python 3.8 or newer, no packages |
+| Static scans | Python 3.9 or newer, no packages |
 | Simulator tours and templates | macOS and Xcode, plus your project's own tools (Flutter, Node...) |
 | Reading Apple's rules and design guidelines | Internet. Without it, skills say they could not check instead of guessing |
 
@@ -204,7 +204,7 @@ Run `/app t rejected` and paste Apple's message. You get the current text of eac
 
 Suppressed rejection risks stay visible as a count, labelled as rejection risks.
 
-`t quick` exits 0 when the scan completed, whatever it found. It exits 2 on wrong usage and 3 when part of the scan could not run.
+`t quick` exits 0 when the scan ran, whatever it found, and says so when some files were read only in part. It exits 2 on wrong usage and 3 when a member could not run. With `--json`, `execution_complete` means every member ran, `coverage_partial` lists what was not read in full, and `complete` is true only when both are clean.
 
 ## How the skills behave
 

@@ -111,7 +111,7 @@ remaining section (§6).
 1. test-health TH-10: fix stale tours first (saves time over running them).
 2. All device tours on a temporary simulator; re-run a failed tour section to
    separate flaky from real (test-health).
-3. Cleanup (`sim_session.py cleanup`) and report.
+3. Cleanup (`sim_session.py cleanup --udid "$U"`) and report.
 
 ## Report
 

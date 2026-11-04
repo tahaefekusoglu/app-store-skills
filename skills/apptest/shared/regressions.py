@@ -9,6 +9,7 @@ import io
 import json
 import os
 import re
+import shutil
 import sys
 from pathlib import Path
 import subprocess
@@ -19,6 +20,8 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
 
+_REAL = subprocess.run
+_real_run = lambda *a: _REAL(list(a), capture_output=True, text=True, timeout=120)
 ROOT = Path(__file__).resolve().parents[2]
 
 def load(name, rel):
@@ -30,6 +33,7 @@ def load(name, rel):
 sim = load('review_sim', 'apptest/shared/sim_session.py')
 runner = load('review_runner', 'apptest/shared/run_all.py')
 scan = load('review_scan', 'apptest/shared/scanlib.py')
+upgrade = load('review_upgrade', 'apptest-upgrade/scripts/upgrade_tour.py')
 
 class ReviewRegressions(unittest.TestCase):
     def setUp(self):
@@ -246,6 +250,183 @@ class ReviewRegressions(unittest.TestCase):
         self.assertEqual(scan.TRUNCATED, [])
         self.assertEqual(len(scan.p_read(str(f), 999)), 999)
         self.assertTrue(scan.TRUNCATED)
+
+    # --- Second independent review: hand-over, retry and half-finished paths
+    def test_21_old_cleanup_keeps_next_sessions_record(self):
+        sim.take_lock(self.project)
+        sim.save_state(self.project, {'udid': 'OLD', 'changes': []})
+        real = sim._release_lock
+        def then_next(project):
+            real(project)
+            sim.take_lock(project)
+            sim.save_state(project, {'udid': 'NEW', 'changes': []})
+        with patch.object(sim, '_release_lock', side_effect=then_next), patch.object(sim, 'sh_rc', return_value=(0, '')), \
+             contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(sim._cleanup(self.project), 0)
+        self.assertEqual(sim.load_state(self.project).get('udid'), 'NEW')
+
+    def test_22_cleanup_does_not_release_a_lock_taken_meanwhile(self):
+        sim.take_lock(self.project)
+        sim.save_state(self.project, {'udid': 'OLD', 'changes': []})
+        def command(*a):
+            if a[-2:] == ('delete', 'OLD') or 'delete' in a:
+                info = json.loads(self.lock.read_text())
+                info['token'] = 'someone-else'
+                self.lock.write_text(json.dumps(info))
+            return 0, ''
+        with patch.object(sim, 'sh_rc', side_effect=command), contextlib.redirect_stdout(io.StringIO()), \
+             contextlib.redirect_stderr(io.StringIO()):
+            sim._cleanup(self.project)
+        self.assertEqual(json.loads(self.lock.read_text())['token'], 'someone-else')
+
+    def test_23_keyboard_value_survives_a_failed_restore(self):
+        sim.save_state(self.project, {'udid': 'A', 'changes': [{'what': 'ConnectHardwareKeyboard'}]})
+        with sim._KeyboardBook() as b:
+            b.data = {'holders': ['A'], 'old': '1'}
+            b.save()
+        system = {'value': 'false', 'fail': True}
+        def command(*a):
+            if a[0] == 'defaults':
+                if system['fail']:
+                    return 1, 'injected'
+                system['value'] = a[-1]
+            return 0, ''
+        with patch.object(sim, 'sh_rc', side_effect=command), contextlib.redirect_stdout(io.StringIO()), \
+             contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(sim._cleanup(self.project), 1)
+            system['fail'] = False
+            self.assertEqual(sim._cleanup(self.project), 0)
+        self.assertEqual(system['value'], 'true')
+
+    def test_24_new_tour_cannot_slip_into_keyboard_restore(self):
+        with sim._KeyboardBook() as b:
+            b.data = {'holders': ['A'], 'old': '1'}
+            b.save()
+        system = {'value': 'false'}
+        started, order = threading.Event(), []
+        def tour_b():
+            started.wait(5)
+            with sim._KeyboardBook() as b:
+                order.append('B in')
+                b.data['old'] = system['value']
+                b.data['holders'].append('B')
+                b.save()
+                system['value'] = 'false'
+        t = threading.Thread(target=tour_b)
+        t.start()
+        def slow_write(*a):
+            started.set()
+            time.sleep(0.3)  # B is trying to get in now
+            order.append('A wrote')
+            system['value'] = a[-1]
+            return 0, ''
+        with patch.object(sim, 'sh_rc', side_effect=slow_write):
+            self.assertIsNone(sim._restore_keyboard({'what': 'ConnectHardwareKeyboard'}, 'A'))
+        t.join(5)
+        self.assertEqual(order, ['A wrote', 'B in'])
+        self.assertEqual(system['value'], 'false', 'B still owns the setting')
+
+    def test_25_stuck_keyboard_lock_gives_an_error_not_a_hang(self):
+        with patch.object(sim, 'KEYBOARD_WAIT', 0.1), sim._KeyboardBook():
+            with self.assertRaises(SystemExit):
+                with sim._KeyboardBook():
+                    pass
+
+    def test_26_failed_first_write_does_not_forget_the_simulator(self):
+        calls, real, fail = [], sim.save_state, {'once': True}
+        def save(project, state):
+            if fail['once']:
+                fail['once'] = False
+                raise OSError('injected')
+            real(project, state)
+        args = SimpleNamespace(project=self.project, runtime='r', device='d', status_bar=False, appearance=None,
+                               content_size=None, software_keyboard=False)
+        with patch.object(sim, 'sh', side_effect=lambda *a, **k: 'CREATED' if 'create' in a else ''), \
+             patch.object(sim, 'device_type', return_value='t'), patch.object(sim, 'save_state', side_effect=save), \
+             patch.object(sim, 'sh_rc', side_effect=lambda *a: calls.append(a) or (0, '')), \
+             contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(OSError):
+                sim.create(args)
+        self.assertTrue(any('delete' in c and 'CREATED' in c for c in calls), calls)
+
+    def test_27_documented_cleanup_works_on_own_session(self):
+        doc = (ROOT / 'apptest/shared/CONVENTIONS.md').read_text(encoding='utf-8')
+        line = next(x for x in doc.splitlines() if 'sim_session.py cleanup --project' in x)
+        self.assertIn('--udid', line)
+        src = (ROOT / 'apptest/shared/sim_session.py').read_text(encoding='utf-8')
+        self.assertIn('cleanup --project {a.project} --udid {udid}', src)
+
+    def _upgrade(self, sh):
+        for n in ('old.app', 'new.app'):
+            (self.root / n).mkdir(exist_ok=True)
+        out = io.StringIO()
+        with patch.object(upgrade, 'sh', side_effect=sh), patch.object(upgrade, 'run_hook', return_value=True), \
+             patch.object(upgrade, 'version_of', return_value='x'), patch.object(upgrade.time, 'sleep'), contextlib.redirect_stdout(out):
+            rc = upgrade.main(['--udid', 'U', '--bundle', 'b.c', '--old', str(self.root / 'old.app'),
+                               '--new', str(self.root / 'new.app'), '--seed', 's', '--wait', '0'])
+        return rc, out.getvalue()
+
+    def test_28_upgrade_without_a_data_folder_could_not_check(self):
+        rc, out = self._upgrade(lambda *a, **k: '1 0 b.c' if 'launchctl' in a else '')
+        self.assertEqual(rc, 3)
+        self.assertIn('could not check', out)
+        self.assertIn('cannot read', out)  # not the same as an empty folder
+
+    def test_29_upgrade_with_no_data_could_not_check(self):
+        empty = self.root / 'box'
+        empty.mkdir()
+        rc, out = self._upgrade(lambda *a, **k: str(empty) if 'get_app_container' in a else '1 0 b.c' if 'launchctl' in a else '')
+        self.assertEqual(rc, 3)
+
+    def test_30_upgrade_with_data_passes_and_lost_file_fails(self):
+        box = self.root / 'box'
+        box.mkdir()
+        (box / 'data.db').write_text('x' * 100)
+        sh = lambda *a, **k: str(box) if 'get_app_container' in a else '1 0 b.c' if 'launchctl' in a else ''
+        self.assertEqual(self._upgrade(sh)[0], 0)
+        def losing(*a, **k):
+            if a[1:3] == ('simctl', 'install') and a[-1].endswith('new.app'):
+                (box / 'data.db').unlink()
+            return sh(*a, **k)
+        self.assertEqual(self._upgrade(losing)[0], 1)
+
+    def test_31_malformed_findings_are_reported_not_a_crash(self):
+        for bad in ('{"findings":[null]}', '{"findings":[{"severity":"INFO"}]}',
+                    '{"findings":[{"id":"X-1","severity":"NOPE"}]}',
+                    '{"findings":[{"id":"X-1","severity":"INFO","evidence":3}]}', '{"findings":[],"skipped":3}'):
+            with self.subTest(bad=bad):
+                out = io.StringIO()
+                with patch.object(runner, 'MEMBERS', runner.MEMBERS[:2]), \
+                     patch.object(runner.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0, bad, '')), \
+                     contextlib.redirect_stdout(out):
+                    rc = runner.main([self.project, '--json'])
+                self.assertEqual(rc, 3)
+                self.assertEqual(len(json.loads(out.getvalue())['problems']), 2)
+
+    def test_32_partial_scan_is_not_complete_but_did_run(self):
+        out = io.StringIO()
+        with patch.object(runner, 'MEMBERS', runner.MEMBERS[:1]), \
+             patch.object(runner, 'run', return_value=({'findings': [], 'truncated': ['first 400 KB']}, '', 0.0)), \
+             contextlib.redirect_stdout(out):
+            rc = runner.main([self.project, '--json'])
+        data = json.loads(out.getvalue())
+        self.assertEqual(rc, 0)
+        self.assertTrue(data['execution_complete'])
+        self.assertFalse(data['complete'])
+        self.assertEqual(data['coverage_partial'], ['first 400 KB'])
+
+    def test_33_dart_template_runs_in_dart(self):
+        t = (ROOT / 'apptest-crawl/references/templates.md').read_text(encoding='utf-8')
+        line = next(x for x in t.splitlines() if x.startswith('final skipLabel'))
+        self.assertNotIn('(?i)', line, 'Dart RegExp rejects inline flags')
+        self.assertIn('caseSensitive: false', line)
+        dart = shutil.which('dart')
+        if not dart:
+            self.skipTest('dart not installed; the text check above still ran')
+        src = self.root / 'probe.dart'
+        src.write_text(line.split('  //')[0] + "\nvoid main() { if (!skipLabel.hasMatch('Delete') || skipLabel.hasMatch('Open')) throw 'bad'; }\n", encoding='utf-8')
+        real = _real_run(dart, str(src))
+        self.assertEqual(real.returncode, 0, real.stderr[-300:])
 
     def test_20_all_members_exist_and_routed(self):
         for code, folder, script in runner.MEMBERS:
