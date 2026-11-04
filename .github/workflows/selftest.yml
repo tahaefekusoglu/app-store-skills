@@ -1,0 +1,21 @@
+name: selftest
+on: [push, pull_request]
+jobs:
+  selftest:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python: ["3.9", "3.13"]
+        include:
+          - os: ubuntu-latest
+            python: "3.8"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -I -X utf8 skills/apptest/shared/selftest.py
+      - if: runner.os != 'Windows'   # sim_session is macOS / POSIX only (fcntl, os.link)
+        run: python -B -X utf8 skills/apptest/shared/regressions.py
