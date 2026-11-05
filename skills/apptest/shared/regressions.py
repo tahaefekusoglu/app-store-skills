@@ -814,8 +814,10 @@ class SkillFiles(unittest.TestCase):
     def test_no_skill_assumes_where_it_is_installed(self):
         # A plugin install lives elsewhere, so a fixed path would break every command.
         skills = Path(__file__).resolve().parents[2]
-        for f in skills.rglob('SKILL.md'):
-            self.assertNotIn('~/.claude/skills', f.read_text(encoding='utf-8'), f.parent.name)
+        # Only this family: an install folder also holds other people's skills.
+        for f in skills.glob('*/SKILL.md'):
+            if f.parent.name == 'app' or f.parent.name.startswith(('apptest', 'apple-design')):
+                self.assertNotIn('~/.claude/skills', f.read_text(encoding='utf-8'), f.parent.name)
 
     def test_every_scan_rule_is_documented(self):
         skills = Path(__file__).resolve().parents[2]
