@@ -5,12 +5,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-        python: ["3.9", "3.13"]
-        exclude:
-          - os: ubuntu-latest   # current Ubuntu runners no longer offer Python 3.9
-            python: "3.9"
+        # Mac runners are the scarcest: one job there, on a fixed image, so a queue can't hold up the rest.
+        include:
+          - {os: macos-15, python: "3.13"}
+          - {os: ubuntu-latest, python: "3.13"}
+          - {os: windows-latest, python: "3.9"}
+          - {os: windows-latest, python: "3.13"}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -19,3 +21,16 @@ jobs:
       - run: python -I -X utf8 skills/apptest/shared/selftest.py
       - if: runner.os != 'Windows'   # sim_session is macOS / POSIX only (fcntl, os.link)
         run: python -B -X utf8 skills/apptest/shared/regressions.py
+      - run: python -B -X utf8 tests/detection/run.py
+  flutter-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: python -I -X utf8 skills/apptest/shared/proof/flutter/run.py "$RUNNER_TEMP/flutter-proof"

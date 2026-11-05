@@ -29,13 +29,24 @@ Use them from the first day of a project, not only the day before submission. Th
 
 ## Install
 
+**As a plugin** (Claude Code 2.1 or newer, easiest to keep up to date). Run these inside Claude Code:
+
+```text
+/plugin marketplace add tahaefekusoglu/app-store-skills
+/plugin install app-store-skills@app-store-skills
+```
+
+`/app` then works as usual. If another command already uses that name, use `/app-store-skills:app`.
+
+**By copying**:
+
 ```sh
 git clone https://github.com/tahaefekusoglu/app-store-skills.git
 cd app-store-skills
 python3 tools/install.py
 ```
 
-This copies the skills to `~/.claude/skills`. It replaces only the folders this repo ships and leaves your other skills alone. Start a new Claude Code session afterwards. To try it somewhere else first, use `python3 tools/install.py --target <folder>`.
+This copies the skills to `~/.claude/skills`. It replaces only the folders this repo ships and leaves your other skills alone.
 
 **Requirements**
 
@@ -64,7 +75,7 @@ You do not have to use `/app`. Asking in your own words also works, such as "doe
 - how you will charge, and how people restore purchases
 - which permissions you ask for, when, and what happens if someone says no
 
-Most skills also have a Setup section with advice for their own area. For example, `/app k locale` explains why "tomorrow" must not be calculated by adding 24 hours.
+Most skills also have a Setup section with advice for their own area. For example, `/app c locale` explains why "tomorrow" must not be calculated by adding 24 hours.
 
 ### Designing a screen
 
@@ -74,22 +85,22 @@ It only suggests. If you say "do it my way", it does, and it mentions a differen
 
 ### After you write some code
 
-`/app t suggest` looks at what changed and suggests at most three checks, each with a reason. For example, date math leads to `t time`, and a new form field leads to `k input`.
+`/app t suggest` looks at what changed and suggests at most three checks, each with a reason. For example, date math leads to `t time`, and a new form field leads to `c input`.
 
 Or go straight to the one you need:
 
 | You just... | Run | It looks for |
 |---|---|---|
-| added a form or a save button | `k input`, `t double` | decimal comma bugs, money stored as a float, double taps creating two records |
-| changed the database schema | `k data`, `t upgrade` | destructive migrations, old versions' data failing to open |
-| added date or time logic | `t time`, `k locale` | month ends, Feb 29, daylight saving, the clock moved back |
-| added a purchase or paywall | `k money` | missing Restore, missing subscription terms, hardcoded prices |
-| added login | `k account` | missing account deletion, sign-in rules, hardcoded secrets |
-| added a permission | `k privacy` | missing usage text, asking too early, privacy manifest |
-| added user comments or AI output | `k content` | reporting and blocking, age rating answers |
-| added a screen | `k layout`, `t crawl` | clipped large text, unlabeled buttons, overflows, crashes |
-| added network calls | `t network`, `k account` | endless spinners, lost data on a dropped connection |
-| wrote new text | `k copy` | text that promises something the code does not do |
+| added a form or a save button | `c input`, `t double` | decimal comma bugs, money stored as a float, double taps creating two records |
+| changed the database schema | `c data`, `t upgrade` | destructive migrations, old versions' data failing to open |
+| added date or time logic | `t time`, `c locale` | month ends, Feb 29, daylight saving, the clock moved back |
+| added a purchase or paywall | `c money` | missing Restore, missing subscription terms, hardcoded prices |
+| added login | `c account` | missing account deletion, sign-in rules, hardcoded secrets |
+| added a permission | `c privacy` | missing usage text, asking too early, privacy manifest |
+| added user comments or AI output | `c content` | reporting and blocking, age rating answers |
+| added a screen | `c layout`, `t crawl` | clipped large text, unlabeled buttons, overflows, crashes |
+| added network calls | `t network`, `c account` | endless spinners, lost data on a dropped connection |
+| wrote new text | `c copy` | text that promises something the code does not do |
 
 ### Setting up tests
 
@@ -140,22 +151,22 @@ Run `/app t rejected` and paste Apple's message. You get the current text of eac
 | `t health` | `apptest-test-health` | Stale, skipped and flaky tests |
 | `t plan` | `apptest-test-strategy` | Which test closes which risk |
 
-### k: check rules and code
+### c: check rules and code
 
 | Command | Skill | What it does |
 |---|---|---|
-| `k ready` | `apptest-store-readiness` | Submission settings, icon, Info.plist, TestFlight |
-| `k privacy` | `apptest-privacy-permissions` | Permissions, privacy label, privacy manifest |
-| `k money` | `apptest-monetization` | Purchases, subscriptions, Restore |
-| `k account` | `apptest-network` | Account deletion, sign-in, offline use, secrets |
-| `k product` | `apptest-product-fit` | Web wrappers, copycats, name and metadata |
-| `k content` | `apptest-content-safety` | Reporting, AI output, age rating |
-| `k layout` | `apptest-layout-a11y` | Large text, screen sizes, VoiceOver |
-| `k locale` | `apptest-locale-time` | Translation, dates, money format, right-to-left |
-| `k data` | `apptest-data-integrity` | Migrations, backups, data loss |
-| `k input` | `apptest-input-actions` | Validation, decimal comma, delete confirmation |
-| `k copy` | `apptest-copy-audit` | Does the text tell the truth, wordiness |
-| `k assets` | `apptest-store-assets` | Store images, sizes, alpha channel |
+| `c ready` | `apptest-store-readiness` | Submission settings, icon, Info.plist, TestFlight |
+| `c privacy` | `apptest-privacy-permissions` | Permissions, privacy label, privacy manifest |
+| `c money` | `apptest-monetization` | Purchases, subscriptions, Restore |
+| `c account` | `apptest-network` | Account deletion, sign-in, offline use, secrets |
+| `c product` | `apptest-product-fit` | Web wrappers, copycats, name and metadata |
+| `c content` | `apptest-content-safety` | Reporting, AI output, age rating |
+| `c layout` | `apptest-layout-a11y` | Large text, screen sizes, VoiceOver |
+| `c locale` | `apptest-locale-time` | Translation, dates, money format, right-to-left |
+| `c data` | `apptest-data-integrity` | Migrations, backups, data loss |
+| `c input` | `apptest-input-actions` | Validation, decimal comma, delete confirmation |
+| `c copy` | `apptest-copy-audit` | Does the text tell the truth, wordiness |
+| `c assets` | `apptest-store-assets` | Store images, sizes, alpha channel |
 
 ### d: Apple design
 
@@ -245,14 +256,15 @@ App text is recognized in English, Turkish, German, Italian, Spanish, French and
 
 ## How this was tested
 
-- Scans ran read-only on about 50 open-source apps. False alarms found there became regression tests in `skills/apptest/shared/regressions.py`.
+- **Seeded defects.** Every rule in the scan scripts has a tiny project with that defect in `tests/detection/`, and CI fails if a rule has no case or stops firing. Healthy Swift and Flutter projects must stay free of rejection risks and user bugs. Three rules need live network access and are checked by hand: `SR-51`, `PP-60` and `PP-61`.
+- **Real projects.** Scans ran read-only on about 50 open-source apps. False alarms found there became regression tests in `skills/apptest/shared/regressions.py`.
+- **Real runs of the test templates.** `skills/apptest/shared/proof/` builds a small app with deliberate defects, in SwiftUI (XCUITest templates) and in Flutter (Dart templates). Each template must pass on the clean app and fail on the broken one, and part of each run happens on a temporary simulator.
 - `skills/apptest/shared/selftest.py` checks that the scripts run on your OS and Python version.
-- `skills/apptest/shared/proof/` builds a small SwiftUI app with deliberate defects on a temporary simulator. The XCUITest templates must pass on the clean version and fail on the broken ones.
 
 **Known limits**
 
-- Scans miss things and raise false alarms.
-- The Dart, TypeScript, Detox and Maestro templates are not exercised by the proof app. Check them in your project.
+- A seeded defect proves a rule can fire. Real projects are more varied, so scans still miss things and raise false alarms.
+- The TypeScript, Jest, Detox and Maestro templates are not exercised by the proof apps. Check them in your project.
 - The fault-injection proxy has been used only with the proof app.
 - Development happened on macOS. Linux and Windows are covered only by the CI workflow in this repo.
 - Claude's automatic choice of skill was measured on Sonnet only, in a partial run: it missed some requests, but no request went to a wrong skill and unrelated requests did not trigger one.
@@ -266,8 +278,12 @@ Before sending a change:
 ```sh
 python3 skills/apptest/shared/selftest.py
 python3 -B skills/apptest/shared/regressions.py
-sh skills/apptest/shared/proof/run.sh <empty folder>   # if you changed an XCUITest template (macOS)
+python3 -B tests/detection/run.py                            # if you changed a scan
+sh skills/apptest/shared/proof/run.sh <empty folder>         # if you changed an XCUITest template (macOS)
+python3 -I skills/apptest/shared/proof/flutter/run.py <empty folder>   # if you changed a Dart template (add --device for a simulator run)
 ```
+
+A new rule needs a seeded case in `tests/detection/cases.py`, or the detection run fails.
 
 When you fix a false alarm, add a test that reproduces the real case, then undo your fix and confirm the test fails. The family's writing rules are in `skills/apptest/shared/CONVENTIONS.md`.
 
