@@ -74,11 +74,22 @@ def state_dir(project: str) -> str:
 
 
 def load_state(project: str) -> dict:
-    try:
-        with open(os.path.join(state_dir(project), "state.json"), encoding="utf-8") as fh:
-            return json.load(fh)
-    except (OSError, ValueError):
+    """The session record. No file yet means an empty record; a file that can't be read or understood stops
+    the command, so that recovery information is never replaced with an empty record."""
+    path = os.path.join(state_dir(project), "state.json")
+    if not os.path.exists(path):
         return {"changes": []}
+    try:
+        with open(path, encoding="utf-8") as fh:
+            st = json.load(fh)
+    except (OSError, ValueError) as e:
+        raise SystemExit(f"the session record {path} can't be read ({e}). It was left as it is: check it, and "
+                         "remove it yourself once nothing in it is needed.")
+    if not isinstance(st, dict) or not isinstance(st.get("changes", []), list):
+        raise SystemExit(f"the session record {path} is damaged. It was left as it is: check it, and remove it "
+                         "yourself once nothing in it is needed.")
+    st.setdefault("changes", [])
+    return st
 
 
 def save_state(project: str, st: dict):
@@ -176,11 +187,20 @@ class _KeyboardBook:
                     self.fh.close()
                     raise SystemExit("hardware keyboard setting is busy: another tour holds it; try again")
                 time.sleep(0.05)
-        try:
-            with open(self.path, encoding="utf-8") as fh:
-                self.data = json.load(fh)
-        except (OSError, ValueError):
-            self.data = {"holders": [], "old": None}
+        # No file means no tour holds the setting. A damaged one means the old value is unknown: it is kept,
+        # and the system-wide setting is not touched (`damaged`), rather than reset to a guess.
+        self.damaged = None
+        self.data = {"holders": [], "old": None}
+        if os.path.exists(self.path):
+            try:
+                with open(self.path, encoding="utf-8") as fh:
+                    data = json.load(fh)
+                if isinstance(data, dict) and isinstance(data.get("holders"), list):
+                    self.data = data
+                else:
+                    self.damaged = "unexpected content"
+            except (OSError, ValueError) as e:
+                self.damaged = str(e)
         return self
 
     def save(self):
@@ -213,7 +233,11 @@ def device_type(name: str) -> str:
 def create(a):
     # The lock comes first: reading the record before it would race with another create.
     take_lock(a.project, getattr(a, "ttl_hours", 6.0))
-    prev = load_state(a.project)
+    try:
+        prev = load_state(a.project)
+    except SystemExit:
+        _release_lock(a.project)  # a damaged record must not also leave the project locked
+        raise
     if prev.get("udid") or prev.get("changes"):
         # Overwriting would lose the old simulator and the setting's old value.
         _release_lock(a.project)
@@ -247,15 +271,20 @@ def _create(a):
         sh("xcrun", "simctl", "ui", udid, "content_size", a.content_size)
     if a.software_keyboard:
         with _KeyboardBook() as book:
-            if not book.data["holders"]:
-                book.data["old"] = sh("defaults", "read", "com.apple.iphonesimulator", "ConnectHardwareKeyboard",
-                                      check=False) or None
-            book.data["holders"].append(udid)
-            # Record first, then change: if interrupted, the undo info survives.
-            st["changes"].append({"what": "ConnectHardwareKeyboard"})
-            save_state(a.project, st)
-            book.save()
-            sh("defaults", "write", "com.apple.iphonesimulator", "ConnectHardwareKeyboard", "-bool", "false")
+            if book.damaged:
+                print(f"warning: the keyboard record {book.path} is damaged ({book.damaged}), so the setting was not "
+                      "changed: the on-screen keyboard may not appear. Fix or remove the record, then create again.",
+                      file=sys.stderr)
+            else:
+                if not book.data["holders"]:
+                    book.data["old"] = sh("defaults", "read", "com.apple.iphonesimulator", "ConnectHardwareKeyboard",
+                                          check=False) or None
+                book.data["holders"].append(udid)
+                # Record first, then change: if interrupted, the undo info survives.
+                st["changes"].append({"what": "ConnectHardwareKeyboard"})
+                save_state(a.project, st)
+                book.save()
+                sh("defaults", "write", "com.apple.iphonesimulator", "ConnectHardwareKeyboard", "-bool", "false")
     save_state(a.project, st)
     size = ""
     try:
@@ -299,6 +328,9 @@ def _restore_keyboard(ch: dict, udid: str | None) -> str | None:
     if "old" in ch:
         return _write_keyboard(ch.get("old"))
     with _KeyboardBook() as book:
+        if book.damaged:
+            return (f"the keyboard record {book.path} is damaged ({book.damaged}), so the setting before the tours is "
+                    "unknown. The setting was left as it is; set Simulator › I/O › Keyboard yourself, then remove the record.")
         holders = [h for h in book.data["holders"] if h != udid]
         if holders:  # another tour still uses it: it needs the setting
             book.data["holders"] = holders
@@ -312,9 +344,18 @@ def _restore_keyboard(ch: dict, udid: str | None) -> str | None:
     return None
 
 
+def sh_out(*args) -> tuple[int, str]:
+    """Exit code and STANDARD OUTPUT (sh_rc gives standard error, for messages)."""
+    try:
+        r = subprocess.run(list(args), capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
+    except (OSError, subprocess.SubprocessError):
+        return 1, ""
+    return r.returncode, r.stdout or ""
+
+
 def simulator_name(udid: str):
     """The simulator's name, "" if it no longer exists, None if the list could not be read."""
-    rc, out = sh_rc("xcrun", "simctl", "list", "devices", "--json")
+    rc, out = sh_out("xcrun", "simctl", "list", "devices", "--json")
     if rc != 0:
         return None
     try:

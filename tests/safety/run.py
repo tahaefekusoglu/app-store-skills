@@ -226,9 +226,13 @@ class Simulators(unittest.TestCase):
 
         def sh_rc(*a):
             calls.append(a)
-            return (listing_rc, listing) if "list" in a else (0, "")
-        with patch.object(self.sim, "sh_rc", side_effect=sh_rc), contextlib.redirect_stdout(io.StringIO()), \
-                contextlib.redirect_stderr(io.StringIO()):
+            return 0, ""
+
+        def sh_out(*a):  # the device list comes on standard output
+            calls.append(a)
+            return listing_rc, listing
+        with patch.object(self.sim, "sh_rc", side_effect=sh_rc), patch.object(self.sim, "sh_out", side_effect=sh_out), \
+                contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
             rc = self.sim.cleanup(SimpleNamespace(project=self.project, udid="U1", force=False))
         return rc, calls
 

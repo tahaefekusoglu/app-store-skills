@@ -151,13 +151,15 @@ NEXT_COMMAND = {"SR": "c ready", "PP": "c privacy", "MO": "c money", "NW": "c ac
 
 
 def next_steps(first):
-    """The member to open for each Start here item, in the same order, without repeats."""
+    """The member to open for each Start here item, in the same order, without repeats. The skill's own name
+    comes with the short command, so the step works whatever names a translated /app uses."""
+    folders = {code: folder for code, folder, _script in MEMBERS}
     steps = {}
     for x in first:
         code = x["id"].split("-")[0]
         if code in NEXT_COMMAND:
-            steps.setdefault(NEXT_COMMAND[code], []).append(x["id"])
-    return [{"command": c, "rules": r} for c, r in steps.items()]
+            steps.setdefault(NEXT_COMMAND[code], {"skill": folders.get(code, ""), "rules": []})["rules"].append(x["id"])
+    return [{"command": c, "skill": v["skill"], "rules": v["rules"]} for c, v in steps.items()]
 
 
 def print_findings(merged):
@@ -301,7 +303,7 @@ def main(argv=None):
     if steps:
         print("\n## Next\n\nThese scans only point. To verify an item against the code and Apple's current rules:\n")
         for x in steps:
-            print(f"- `/app {x['command']}` for {', '.join(x['rules'])}")
+            print(f"- `/app {x['command']}` ({x['skill']}) for {', '.join(x['rules'])}")
     if problems:
         print("\n## Scan incomplete\nThese members gave no result; this does not count as \"no findings\":\n" + "\n".join(f"- {x}" for x in problems))
         return 3

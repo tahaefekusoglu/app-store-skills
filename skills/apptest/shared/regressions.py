@@ -730,15 +730,86 @@ class SkillFiles(unittest.TestCase):
     def test_next_steps_point_at_real_commands_without_repeats(self):
         first = [{'id': 'SR-30'}, {'id': 'SR-31'}, {'id': 'NW-10'}, {'id': 'XX-1'}]
         self.assertEqual(runner.next_steps(first),
-                         [{'command': 'c ready', 'rules': ['SR-30', 'SR-31']}, {'command': 'c account', 'rules': ['NW-10']}])
-        table = (Path(__file__).resolve().parents[2] / 'app' / 'SKILL.md').read_text(encoding='utf-8')
-        for command in runner.NEXT_COMMAND.values():
-            self.assertRegex(table, rf'\| {command} \|', command)
+                         [{'command': 'c ready', 'skill': 'apptest-store-readiness', 'rules': ['SR-30', 'SR-31']},
+                          {'command': 'c account', 'skill': 'apptest-network', 'rules': ['NW-10']}])
+        skills = Path(__file__).resolve().parents[2]
+        # The router may be a translated overlay; it must still name every suggested command, as a row or an alias.
+        table = (skills / 'app' / 'SKILL.md').read_text(encoding='utf-8')
+        folders = {c: f for c, f, _s in runner.MEMBERS}
+        for code, command in runner.NEXT_COMMAND.items():
+            self.assertIn(command, table, command)
+            self.assertTrue((skills / folders[code] / 'SKILL.md').is_file(), folders[code])
 
     def test_every_member_points_at_the_conversation_rules(self):
         skills = Path(__file__).resolve().parents[2]
         for f in skills.glob('apptest-*/SKILL.md'):
             self.assertIn('§11', f.read_text(encoding='utf-8'), f.parent.name)
+
+    def test_simulator_name_reads_the_list_from_standard_output(self):
+        # Codex 2026-11-06 D01: the helper read stderr, so it never recognized the family's own simulator.
+        listing = json.dumps({'devices': {'iOS-26': [{'udid': 'U1', 'name': 'apptest-ab12'}]}})
+        ok = subprocess.CompletedProcess([], 0, listing, '')
+        with patch.object(sim.subprocess, 'run', return_value=ok):
+            self.assertEqual(sim.simulator_name('U1'), 'apptest-ab12')
+            self.assertEqual(sim.simulator_name('U2'), '')
+        with patch.object(sim.subprocess, 'run', return_value=subprocess.CompletedProcess([], 1, '', 'boom')):
+            self.assertIsNone(sim.simulator_name('U1'))
+
+    def test_a_damaged_session_record_is_kept_not_replaced(self):
+        # Codex 2026-11-06 D02a.
+        with tempfile.TemporaryDirectory() as tmp, patch.object(sim, 'CACHE', tmp):
+            project = os.path.join(tmp, 'p'); os.makedirs(project)
+            path = os.path.join(sim.state_dir(project), 'state.json')
+            with open(path, 'w') as fh:
+                fh.write('{"udid": "U1", "changes": [')
+            with self.assertRaises(SystemExit):
+                sim.load_state(project)
+            with open(path) as fh:
+                self.assertEqual(fh.read(), '{"udid": "U1", "changes": [')
+
+    def test_a_damaged_keyboard_record_never_resets_the_setting(self):
+        # Codex 2026-11-06 D02b: with the old value unknown, nothing system-wide may change.
+        with tempfile.TemporaryDirectory() as tmp, patch.object(sim, 'CACHE', tmp):
+            with open(os.path.join(tmp, 'keyboard.json'), 'w') as fh:
+                fh.write('not json')
+            calls = []
+            with patch.object(sim, 'sh_rc', side_effect=lambda *a: calls.append(a) or (0, '')):
+                err = sim._restore_keyboard({'what': 'ConnectHardwareKeyboard'}, 'U1')
+            self.assertIn('damaged', err or '')
+            self.assertFalse([c for c in calls if 'defaults' in c], calls)
+
+    def test_identical_broken_screenshots_are_not_a_pass(self):
+        # Codex 2026-11-06 D03.
+        visual = load('review_visual', 'apptest-visual/scripts/vi_diff.py')
+        with tempfile.TemporaryDirectory() as tmp:
+            a, b = os.path.join(tmp, 'a.png'), os.path.join(tmp, 'b.png')
+            for p_ in (a, b):
+                open(p_, 'wb').close()
+            res = visual.compare(('screen.png', a, b, None, 0, 0, [], None))
+            self.assertEqual(res['status'], 'unreadable')
+
+    def test_mask_area_counts_overlaps_once_and_ignores_outside(self):
+        # Codex 2026-11-06 D04.
+        visual = load('review_visual', 'apptest-visual/scripts/vi_diff.py')
+        one = visual._rect_masks('s', 10, 10, 0, [(0, 0, 10, 2)], None)
+        twice = visual._rect_masks('s', 10, 10, 0, [(0, 0, 10, 2), (0, 0, 10, 2)], None)
+        self.assertEqual(visual._masked_area(one, 10), 20)
+        self.assertEqual(visual._masked_area(twice, 10), 20)
+        self.assertEqual(visual._rect_masks('s', 10, 10, 0, [(20, 0, 5, 10), (-5, -5, 3, 3)], None), [])
+        self.assertEqual(visual._masked_area(visual._rect_masks('s', 10, 10, 0, [(0, 0, 6, 6), (3, 3, 6, 6)], None), 10), 63)
+
+    def test_overlapping_or_outside_masks_do_not_change_the_ratio(self):
+        # Codex 2026-11-06 D04, end to end: one changed pixel outside a 2-row mask is 1/80 of what is compared.
+        visual = load('review_visual', 'apptest-visual/scripts/vi_diff.py')
+        with tempfile.TemporaryDirectory() as tmp:
+            a, b = os.path.join(tmp, 'a.png'), os.path.join(tmp, 'b.png')
+            rows = [bytearray(b"\x10\x20\x30" * 10) for _ in range(10)]
+            visual.write_png(a, 10, 10, rows, ct=2)
+            rows[5][15:18] = b"\xff\xff\xff"
+            visual.write_png(b, 10, 10, rows, ct=2)
+            for masks in ([(0, 0, 10, 2)], [(0, 0, 10, 2), (0, 0, 10, 2)], [(0, 0, 10, 2), (20, 0, 5, 10)]):
+                res = visual.compare(('s.png', a, b, None, 0, 0, masks, None))
+                self.assertAlmostEqual(res['ratio'], 1 / 80, msg=masks)
 
     def test_no_skill_assumes_where_it_is_installed(self):
         # A plugin install lives elsewhere, so a fixed path would break every command.

@@ -257,7 +257,29 @@ def _rect_masks(name, w, h, mask_top, masks, mask_file):
     for pat, rs in (mask_file or {}).items():
         if fnmatch.fnmatch(name, pat):
             rects += [tuple(r) for r in rs]
-    return [(max(0, x), max(0, y), min(w, x + rw), min(h, y + rh)) for x, y, rw, rh in rects]
+    # Both corners are kept inside the image, and empty or outside rectangles dropped: a mask off the image
+    # must not shrink the area a difference is measured against.
+    out = []
+    for x, y, rw, rh in rects:
+        x0, y0 = min(max(0, x), w), min(max(0, y), h)
+        x1, y1 = min(max(0, x + rw), w), min(max(0, y + rh), h)
+        if x1 > x0 and y1 > y0:
+            out.append((x0, y0, x1, y1))
+    return out
+
+
+def _masked_area(rects, h):
+    """Pixels covered by at least one rectangle, overlaps counted once."""
+    total = 0
+    for y in range(h):
+        spans = sorted((x0, x1) for x0, y0, x1, y1 in rects if y0 <= y < y1)
+        end = -1
+        for x0, x1 in spans:
+            if x1 <= end:
+                continue
+            total += x1 - max(x0, end)
+            end = x1
+    return total
 
 
 def compare(job):
@@ -266,10 +288,12 @@ def compare(job):
     res = {"name": name}
     try:
         with open(a_path, "rb") as fa, open(b_path, "rb") as fb:
-            if fa.read() == fb.read():
-                res.update(status="same", changed=0, ratio=0.0)
-                return res
+            identical = fa.read() == fb.read()
+        # Decoded even when the bytes match: two identical broken captures are not a passing screen.
         aw, ah, ar, asig = read_png(a_path)
+        if identical:
+            res.update(status="same", changed=0, ratio=0.0)
+            return res
         bw, bh, br, bsig = read_png(b_path)
     except (OSError, PngError) as e:
         res.update(status="unreadable", error=str(e))
@@ -309,7 +333,7 @@ def compare(job):
                 drow[x * 3:x * 3 + 3] = b"\xff\x00\x00"
         if diff_rows is not None:
             diff_rows.append(drow)
-    masked = sum((x1 - x0) * (y1 - y0) for x0, y0, x1, y1 in rects)
+    masked = _masked_area(rects, ah)
     total = max(1, aw * ah - masked)
     res.update(status="changed" if changed else "same", changed=changed, ratio=changed / total)
     if changed:
