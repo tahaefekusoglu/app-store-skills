@@ -12,10 +12,11 @@ metadata:
 
 # apptest-test-strategy: test strategy
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.3 (principles 11, 14, 15) ·
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 (principles 11, 14, 15) ·
 group principles `../apptest/shared/test-methods.md` · report
 `../apptest/shared/report.md`. No App Store rule of its own; 2.1 (crashes,
 missing features) indirectly.
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Gives a report and a plan; does NOT run tests and does
 NOT write tests (it writes them if the user asks; CONVENTIONS §5.5).

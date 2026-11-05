@@ -1,6 +1,6 @@
 # apptest: shared rules
 
-Version: 1.9.0 (2026-11-05; 1.9: install-agnostic paths, dated Apple requirements · 2026-11-03; 1.4: portability · 1.5: live app audit · 1.6: honest status, §10 · 1.7: templates are proven by running them · 1.8: English sources, user-language output). All members of the family follow this file;
+Version: 1.10.0 (2026-11-05; 1.10: talking with the user (§11) · 1.9: install-agnostic paths, dated Apple requirements · 2026-11-03; 1.4: portability · 1.5: live app audit · 1.6: honest status, §10 · 1.7: templates are proven by running them · 1.8: English sources, user-language output). All members of the family follow this file;
 each member states the lowest version it is compatible with in its SKILL.md ("≥ 1.2").
 When this file changes the version goes up: additions / clarifications only → MINOR
 version (1.2 → 1.3, members stay compatible); a change that alters or removes a rule
@@ -332,6 +332,36 @@ suppressed, this line also says "(rejection risk)"; the warning is given once, w
   after "Step 0" (3–8 items, `<CODE>-P1` ...). They concern only that member's own risk or quality; they
   do not repeat or loosen family and group principles (principle 0). Test method members also follow
   `shared/test-methods.md`.
+
+## §11 Talking with the user
+
+Say what helps the user decide or wait, and nothing else. Use the user's language.
+
+**Ask only in these four cases:**
+
+1. **Before long or disruptive work.** Over a few minutes, or if it opens a simulator: give the estimate and one
+   question, with a quicker option (§6). "About 40 minutes on a temporary simulator, or a 1-minute scan only.
+   Which one?" Static scans just run.
+2. **When an answer changes a result and the code can't tell.** Ask once, after the work, at most 3 questions
+   together. State what you'll assume otherwise: "Do you sell only consumables? If not, MO-13 stands." With no
+   answer, the finding stays and is marked "not verified".
+3. **Before changing the project** (principle 8), or sending anything anywhere.
+4. **At the end,** to offer the next step (below).
+
+**Status during long work.** One line when a section ends: "3 of 6 done (small iPhone): 1 problem so far." Report
+at once if something stops the work or changes the estimate. Stay silent for work under about 2 minutes.
+
+**End with one next step.** After the report, recommend the single most useful step and why, as a question when
+you can do it yourself: "Shall I fix the 2 rejection risks? They block a release, and the rest can wait." Add at most
+two alternatives. If nothing is needed, say so and stop: never invent a next step.
+
+**Don't:**
+
+- ask to confirm what the user just asked for, or "shall I continue?" partway through
+- ask once per finding
+- ask when the answer is clear from the code or an obvious default
+- repeat a suggestion the user declined (principle 3)
+- restate the plan, or narrate each step
 
 ## Paths
 

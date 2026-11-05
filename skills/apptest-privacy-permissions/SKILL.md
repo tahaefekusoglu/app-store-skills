@@ -13,12 +13,13 @@ metadata:
 
 # apptest-privacy-permissions — privacy and permissions
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.2 · report
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · report
 `../apptest/shared/report.md` · rejection index `../apptest/shared/rejections.md`
 (R-37 … R-48). Rule text comes from the official site every time (principle 7):
 https://developer.apple.com/app-store/review/guidelines/#privacy ·
 https://developer.apple.com/documentation/bundleresources/privacy-manifest-files ·
 https://developer.apple.com/app-store/user-privacy-and-data-use/
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Reports; does not touch code or App Store Connect.
 Sends user data nowhere. `--policy-url` only reads the public policy page.

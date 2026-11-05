@@ -12,10 +12,11 @@ metadata:
 
 # apptest-upgrade — upgrading from an old version
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.3 · group principles
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · group principles
 `../apptest/shared/test-methods.md` · rules in data-integrity (DI-P1,
 DI-P2) · report `../apptest/shared/report.md`. Shared tool:
 `../apptest/shared/sim_session.py`.
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Runs in a temporary simulator; does not touch the user's device
 or data. The old version is built from a git tag / archive, without touching the

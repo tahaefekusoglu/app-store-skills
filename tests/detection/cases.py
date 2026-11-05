@@ -161,6 +161,10 @@ var body: some Scene { WindowGroup { Text("Hello") } } }
          plist="<key>NSHealthShareUsageDescription</key><string>Reads your steps to show a weekly summary.</string>"), ["PP-40"]),
     case("pp-always-location", "PP", swift({"Acme/L.swift": "import CoreLocation\nlet m = CLLocationManager()\nfunc r() { m.requestAlwaysAuthorization() }\n"},
          plist="<key>NSLocationAlwaysAndWhenInUseUsageDescription</key><string>Tracks your route while recording a run.</string><key>UIBackgroundModes</key><array><string>location</string></array>"), ["PP-41"]),
+    case("pp-web-camera-in-capacitor", "PP", {"package.json": '{ "dependencies": { "@capacitor/core": "6.0.0", "@capacitor/ios": "6.0.0" } }', "capacitor.config.json": '{ "appId": "com.acme.a" }', "ios/App/App.xcodeproj/project.pbxproj": PBX % "16.0", "ios/App/App/Info.plist": PLIST % "", "ios/App/App/AppDelegate.swift": "import UIKit\n",
+         "src/scan.ts": "export const s = navigator.mediaDevices.getUserMedia({ video: true });\n"}, ["PP-10"]),
+    case("pp-web-microphone-only-is-not-camera", "PP", {"package.json": '{ "dependencies": { "@capacitor/core": "6.0.0", "@capacitor/ios": "6.0.0" } }', "capacitor.config.json": '{ "appId": "com.acme.a" }', "ios/App/App.xcodeproj/project.pbxproj": PBX % "16.0", "ios/App/App/Info.plist": PLIST % "<key>NSMicrophoneUsageDescription</key><string>Records your voice note for the message.</string>", "ios/App/App/AppDelegate.swift": "import UIKit\n",
+         "src/scan.ts": "export const s = navigator.mediaDevices.getUserMedia({ audio: true });\n"}, absent=["PP-10"]),
     case("pp-clean", "PP", swift(), absent=["PP-10", "PP-20", "PP-30"], clean=True),
 
     # Purchases
@@ -172,10 +176,16 @@ var body: some Scene { WindowGroup { Text("Hello") } } }
     case("mo-review-reward", "MO", swift({"Acme/en.lproj/Localizable.strings": '"r" = "Rate us and get 100 coins";\n"l" = "Open a loot box";\n',
          "Acme/P.swift": 'import StoreKit\nfunc buy() async throws { let p = try await Product.products(for: ["a"]); _ = try await p[0].purchase() }\nfunc r() async throws { try await AppStore.sync() }\n'}), ["MO-18", "MO-19"]),
     case("mo-ads", "MO", swift({"Podfile": "platform :ios, '15.0'\npod 'Google-Mobile-Ads-SDK'\n", "Acme/A.swift": "import GoogleMobileAds\nlet a = GADMobileAds.sharedInstance()\n"}), ["MO-20"]),
+    case("mo-restore-call-but-no-button", "MO", swift({"Acme/Store.swift": 'import StoreKit\nfunc buy() async throws { let p = try await Product.products(for: ["a"]); _ = try await p[0].purchase() }\nfunc restorePurchases() async throws { try await AppStore.sync() }\n'}), expect_title={"MO-13": "no visible"}),
+    case("mo-restore-only-in-comment-or-error", "MO", swift({"Acme/Store.swift": 'import StoreKit\nfunc buy() async throws { let p = try await Product.products(for: ["a"]); _ = try await p[0].purchase() }\n// the "Restore Purchases" button\nfunc restorePurchases() async throws { try await AppStore.sync() }\nlet e = "Restore failed"\n'}), expect_title={"MO-13": "no visible"}),
+    case("mo-restore-button-in-code", "MO", swift({"Acme/Store.swift": 'import StoreKit\nimport SwiftUI\nfunc buy() async throws { let p = try await Product.products(for: ["a"]); _ = try await p[0].purchase() }\nfunc restorePurchases() async throws { try await AppStore.sync() }\nlet b = Button("Restore Purchases") { }\n'}), expect_title={"MO-13": "Restore call exists"}),
     case("mo-clean", "MO", swift(), absent=["MO-13", "MO-14", "MO-15", "MO-16"], clean=True),
 
     # Accounts and network
     case("nw-no-delete", "NW", swift({"Acme/A.swift": 'func signUp(email: String, password: String) {}\nstruct RegisterView {}\nfunc createAccount() {}\nfunc signIn() {}\nimport GoogleSignIn\nlet g = GIDSignIn.sharedInstance\nlet u = "http://api.acme.io/v1"\nlet key = "' + FAKE_KEY + '"\nimport FirebaseRemoteConfig\nlet rc = RemoteConfig.remoteConfig()\nfunc f() { URLSession.shared.dataTask(with: URL(string: u)!).resume() }\n'}), ["NW-10", "NW-11", "NW-12", "NW-13", "NW-14", "NW-16", "NW-17"]),
+    case("nw-apple-sign-in-without-deletion", "NW", swift({"Acme/Acme.entitlements": '<?xml version="1.0"?><plist version="1.0"><dict><key>com.apple.developer.applesignin</key><array><string>Default</string></array></dict></plist>', "Acme/A.swift": "import AuthenticationServices\nlet a = ASAuthorizationAppleIDProvider()\nlet r = a.createRequest()\n"}), ["NW-10"], expect_title={"NW-10": "Sign-in creates accounts"}),
+    case("nw-apple-sign-in-with-deletion", "NW", swift({"Acme/Acme.entitlements": '<?xml version="1.0"?><plist version="1.0"><dict><key>com.apple.developer.applesignin</key><array><string>Default</string></array></dict></plist>', "Acme/A.swift": "import AuthenticationServices\nlet a = ASAuthorizationAppleIDProvider()\nfunc deleteAccount() {}\n"}), expect_title={"NW-10": "Account deletion flow exists"}),
+    case("nw-google-sign-in-may-be-only-for-drive", "NW", flutter(deps="  google_sign_in: ^6.0.0\n"), expect_title={"NW-10": "no sign of account creation"}),
     case("nw-code-push", "NW", flutter(deps="  shorebird_code_push: ^1.0.0\n"), ["NW-15"]),
     case("nw-clean", "NW", swift(), absent=["NW-10", "NW-13", "NW-16"], clean=True),
 
@@ -217,6 +227,8 @@ var body: some Scene { WindowGroup { Text("Hello") } } }
          'Button("Save") { Task { await save() } }', 'Button("Delete", role: .destructive) { items.removeAll(); delete(item) }', 'TextField("Amount", text: $t)', "} } }",
          "func save() async {}", "func delete(_ i: Int) {}", "let amount = Double(amountText) ?? 0", "var price: Double = 0", "var total: Float = 0", "let n = name.count", "if name.count > 20 { }"])}), ["IA-10", "IA-11", "IA-12", "IA-13"]),
     case("ia-dart", "IA", flutter({"lib/f.dart": "\n".join(["import 'package:flutter/material.dart';", "final m = TextField(controller: c, decoration: InputDecoration(labelText: 'Amount'));", "final n = name.length > 20;", "final v = double.parse(c.text);", "final maxLen = name.length;"])}), ["IA-14", "IA-15"]),
+    case("ia-dialog-elsewhere-does-not-cover-this-button", "IA", flutter({"lib/m.dart": "import 'package:flutter/material.dart';\nvoid a(c) { showDialog(context: c, builder: (_) => const Text('other')); }\n" + "// filler\n" * 90 + "final b = IconButton(icon: const Icon(Icons.delete_outline), onPressed: () { items.removeAt(0); });\n"}), ["IA-11"]),
+    case("ia-confirmed-button-is-fine", "IA", flutter({"lib/m.dart": "import 'package:flutter/material.dart';\nfinal b = IconButton(icon: const Icon(Icons.delete_outline), onPressed: () async { final ok = await showDialog(context: c, builder: (_) => const Text('Sure?')); if (ok) items.removeAt(0); });\n"}), absent=["IA-11"]),
     case("ia-clean", "IA", swift(), absent=["IA-10", "IA-13"], clean=True),
 
 
@@ -280,6 +292,33 @@ var body: some Scene { WindowGroup { Text("Hello") } } }
     case("sa-no-ipad", "SA", {"en/iphone/a.png": png(1320, 2868)}, ["SA-16"], args=["--ipad"]),
     case("sa-video", "SA", {"en/iphone/a.mov": b"x", "en/iphone/b.mov": b"x", "en/iphone/c.mov": b"x", "en/iphone/d.mov": b"x"}, ["SA-20", "SA-21"]),
     case("sa-clean", "SA", {"en/iphone/a.png": png(1320, 2868)}, clean=True),
+
+    # False alarms found by sampling findings on real projects
+    case("lt-rn-margins-flip-by-themselves", "LT", {"package.json": '{ "dependencies": { "react-native": "0.74.0" } }', "index.js": "x\n", "ios/A.xcodeproj/project.pbxproj": PBX % "16.0", "ios/A/Info.plist": PLIST % "",
+         "src/a.tsx": "const s = { marginLeft: 8, paddingRight: 4 };\n", "locales/en.json": '{"a":"A"}', "locales/ar.json": '{"a":"B"}'}, absent=["LT-30"]),
+    case("lt-rn-text-align-still-counts", "LT", {"package.json": '{ "dependencies": { "react-native": "0.74.0" } }', "index.js": "x\n", "ios/A.xcodeproj/project.pbxproj": PBX % "16.0", "ios/A/Info.plist": PLIST % "",
+         "src/a.tsx": "const s = { textAlign: 'right' };\n", "locales/en.json": '{"a":"A"}', "locales/ar.json": '{"a":"B"}'}, ["LT-30"]),
+    case("lt-hardcoded-text-in-dev-screens-and-values", "LT", swift({"Acme/en.lproj/Localizable.strings": '"a" = "A";\n', "Acme/tr.lproj/Localizable.strings": '"a" = "B";\n',
+         "Acme/dev_mode_root.swift": 'import SwiftUI\nlet a = Text(verbatim: "Developer only")\n', "Acme/__automation__/S.swift": 'import SwiftUI\nlet a = Text(verbatim: "Open locked")\n',
+         "Acme/Card.swift": 'import SwiftUI\nlet a = Text(verbatim: "••••\\(item.ccNumberLast4)")\n'}), absent=["LT-40"]),
+    case("ia-empty-check-is-not-a-length-limit", "IA", flutter({"lib/f.dart": "final a = title.length > 0;\nfinal b = name.length == 0;\n"}), absent=["IA-14"]),
+    case("ia-cgfloat-is-layout-not-money", "IA", swift({"Acme/D.swift": 'let currency = "x"\nvar amountFieldMinHeight: CGFloat = 52\n'}), absent=["IA-13"]),
+    case("th-comments-and-system-screens-are-not-stale", "TH", swift({"AcmeUITests/A.swift": 'import XCTest\nfinal class A: XCTestCase { func testA() {\n// app.buttons["old-button"].tap()\nspringboard.buttons["Options"].tap()\nXCTAssertTrue(true)\n} }\n',
+         "Acme/V.swift": 'import SwiftUI\nlet b = Text("x").accessibilityIdentifier("real-button")\n'}), absent=["TH-10"]),
+    case("th-zero-delay-is-not-a-timed-wait", "TH", {"package.json": '{ "dependencies": { "react-native": "0.74.0" } }', "index.js": "x\n", "ios/A.xcodeproj/project.pbxproj": PBX % "16.0", "ios/A/Info.plist": PLIST % "",
+         "__tests__/a.test.js": "it('a', async () => { await new Promise(resolve => setTimeout(resolve, 0)); expect(1).toBe(1); });\n"}, absent=["TH-13"]),
+    case("th-timed-wait-still-counts", "TH", {"package.json": '{ "dependencies": { "react-native": "0.74.0" } }', "index.js": "x\n", "ios/A.xcodeproj/project.pbxproj": PBX % "16.0", "ios/A/Info.plist": PLIST % "",
+         "__tests__/a.test.js": "it('a', async () => { await new Promise(resolve => setTimeout(resolve, 500)); expect(1).toBe(1); });\n"}, ["TH-13"]),
+    case("nw-prefix-check-is-not-a-connection", "NW", swift({"Acme/U.swift": 'func f(u: String) { if u.hasPrefix("http://www.") { } }\nlet n = "http://www."\nlet m = "x".replacingOccurrences(of: "http://acme.io", with: "")\n'}), absent=["NW-13"]),
+    case("sr-coming-soon-once-not-per-translation", "SR", swift({"Acme/en.lproj/Localizable.strings": '"a" = "Fine";\n', "Acme/de.lproj/Localizable.strings": '"a" = "Demnächst verfügbar";\n'}), absent=["SR-42"]),
+    case("sr-dart-stat-is-not-the-c-function", "SR", flutter({"lib/s.dart": "import 'dart:io';\nfinal a = File('x').stat();\n"}), absent=["SR-31"]),
+    case("sr-c-stat-still-counts", "SR", swift({"Acme/S.m": "#include <sys/stat.h>\nint f(struct stat *b) { return stat(\"x\", b); }\n"}), ["SR-31"]),
+    case("sr-capacitor-shell-under-web-folder", "SR", {"apps/web/package.json": '{ "dependencies": { "@capacitor/core": "6.0.0", "@capacitor/ios": "6.0.0" } }', "apps/web/capacitor.config.json": '{ "appId": "com.acme.a" }',
+        "apps/web/ios/App/App.xcodeproj/project.pbxproj": PBX % "16.0", "apps/web/ios/App/App/Info.plist": PLIST % "", "apps/web/ios/App/App/AppDelegate.swift": "import UIKit\nimport Capacitor\nlet a = UserDefaults.standard\n",
+        "apps/web/src/index.ts": "export {};\n"}, ["SR-30"]),
+    case("sr-web-folder-alone-is-not-ios", "SR", {"web/App.xcodeproj/project.pbxproj": PBX % "9.0", "web/App/Info.plist": PLIST % "", "web/App/A.swift": "import UIKit\n", "lib/main.dart": "void main() {}\n", "pubspec.yaml": "name: a\ndependencies:\n  flutter:\n    sdk: flutter\n"}, absent=["SR-61"]),
+    case("skills-installed-in-the-project-are-not-the-app", "SR", swift({".claude/skills/x/proof/App.swift": 'let u = "https://staging.acme.io/api"\n', ".claude/skills/x/en.lproj/Localizable.strings": '"a" = "Lorem ipsum";\n', ".cursor/rules/a.swift": 'let u = "https://staging.acme.io"\n'}), absent=["SR-40", "SR-41"]),
+    case("sr-local-address-in-url-check", "SR", swift({"Acme/U.swift": 'func f(p: String) -> Bool { p.hasPrefix("http://127.0.0.1:") }\n'}), absent=["SR-41"]),
 
     # Design audit
     case("ds-material", "DS", flutter({"lib/s.dart": "\n".join(["import 'package:flutter/material.dart';", "final a = FloatingActionButton(onPressed: null);"] +

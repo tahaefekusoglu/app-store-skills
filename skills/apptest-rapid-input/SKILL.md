@@ -12,10 +12,11 @@ metadata:
 
 # apptest-rapid-input — rapid and concurrent input
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.3 · group principles
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · group principles
 `../apptest/shared/test-methods.md` (T1–T10) · rule member
 input-actions (IA-10 double submit, IA-11 delete without confirmation) · report
 `../apptest/shared/report.md`.
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Scans, gives a test plan and templates; writes the test to the project
 only with approval. Does not add hooks to app code (T3); the fake dependency needed to hold

@@ -31,7 +31,8 @@ CAPS = {
     "camera": (["NSCameraUsageDescription"],
                r"AVCaptureDevice|AVCaptureSession|sourceType\s*=\s*\.camera|\.camera\b[^\n]*UIImagePickerController|"
                r"ImageSource\.camera|launchCamera|takePictureAsync|DataScannerViewController|"
-               r"MediaPicker(\.Default)?\.Capture|CameraView|ZXing|BarcodeReader|CameraBarcodeReaderView",
+               r"MediaPicker(\.Default)?\.Capture|CameraView|ZXing|BarcodeReader|CameraBarcodeReaderView|"
+               r"getUserMedia\(\s*\{[^}]*\bvideo\s*:\s*(?!false)",
                r"\bcamera:|mobile_scanner|qr_code_scanner|react-native-vision-camera|expo-camera|"
                r"react-native-camera|@capacitor/camera|barcode_scan"),
     "photo library (read)": (["NSPhotoLibraryUsageDescription"],
@@ -54,7 +55,8 @@ CAPS = {
               r"background_location|flutter_background_geolocation"),
     "microphone": (["NSMicrophoneUsageDescription"],
                  r"AVAudioRecorder|requestRecordPermission|AVAudioApplication\.requestRecordPermission|"
-                 r"\.record\b[^\n]*AVAudioSession|setCategory\(\s*\.(playAndRecord|record)|Audio\.Recording|startRecording",
+                 r"\.record\b[^\n]*AVAudioSession|setCategory\(\s*\.(playAndRecord|record)|Audio\.Recording|startRecording|"
+                 r"getUserMedia\(\s*\{[^}]*\baudio\s*:\s*(?!false)",
                  r"\brecord:|flutter_sound|speech_to_text|audio_recorder|expo-av|react-native-audio-recorder|"
                  r"@react-native-voice"),
     "contacts": (["NSContactsUsageDescription"], r"CNContactStore|ContactsService|Contacts\.getContacts|getAll\(\)[^\n]*Contacts",

@@ -12,10 +12,11 @@ metadata:
 
 # apptest-network-chaos — behaviour on a bad network
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.3 · group principles
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · group principles
 `../apptest/shared/test-methods.md` (T1–T10) · rule member network
 (NW-12 connection monitoring, NW-13 plain http) · related rapid-input
 (RI-S9 double record on retry) · report `../apptest/shared/report.md`.
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Scans, provides scenarios and templates, runs the proxy only
 in front of a mock / staging server the user names; writes tests into the project

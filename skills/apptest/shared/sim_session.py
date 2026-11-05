@@ -312,6 +312,22 @@ def _restore_keyboard(ch: dict, udid: str | None) -> str | None:
     return None
 
 
+def simulator_name(udid: str):
+    """The simulator's name, "" if it no longer exists, None if the list could not be read."""
+    rc, out = sh_rc("xcrun", "simctl", "list", "devices", "--json")
+    if rc != 0:
+        return None
+    try:
+        devices = json.loads(out).get("devices", {})
+    except (ValueError, AttributeError):
+        return None
+    for group in devices.values() if isinstance(devices, dict) else []:
+        for d in group if isinstance(group, list) else []:
+            if isinstance(d, dict) and d.get("udid") == udid:
+                return str(d.get("name") or "")
+    return ""
+
+
 def _cleanup(project: str, quiet: bool = False, udid: str | None = None) -> int:
     lock_path = os.path.join(state_dir(project), "lock")
     my_lock = _read_lock(lock_path)
@@ -335,10 +351,25 @@ def _cleanup(project: str, quiet: bool = False, udid: str | None = None) -> int:
     st["changes"] = remaining
     if udid:
         st["udid"] = udid
+
+    def still_mine():
+        # Another cleanup may finish meanwhile and a new session take the lock: its record is not ours to write.
+        current = _read_lock(lock_path)
+        return not current or current.get("token") == my_lock.get("token")
+
     try:
-        save_state(project, st)
+        if still_mine():
+            save_state(project, st)
     except OSError as e:
         failed.append(f"record: {e}")
+    name = simulator_name(udid) if udid else ""
+    if udid and name is None:
+        failed.append(f"simulator {udid}: could not read the simulator list to confirm it is ours, so it was left untouched")
+        udid = None
+    elif udid and name and not name.startswith("apptest"):
+        # The record is damaged or not ours: never delete a simulator this family did not create.
+        failed.append(f"simulator {udid} is named {name!r}, not one this family created: left untouched")
+        udid = None
     if udid:
         rc, err = sh_rc("xcrun", "simctl", "shutdown", udid)  # errors if already off too: delete is the real result
         rc, err = sh_rc("xcrun", "simctl", "delete", udid)
@@ -351,8 +382,9 @@ def _cleanup(project: str, quiet: bool = False, udid: str | None = None) -> int:
         if done:
             print("completed: " + ", ".join(done), file=sys.stderr)
         return 1
-    # Last write BEFORE the lock goes: after that the record may belong to the next session.
-    save_state(project, {"changes": []})
+    # Last write BEFORE the lock goes, and only while the session is still ours.
+    if still_mine():
+        save_state(project, {"changes": []})
     current = _read_lock(lock_path)
     if current:
         if current.get("token") == my_lock.get("token"):

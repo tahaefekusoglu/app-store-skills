@@ -23,6 +23,7 @@ the family head). Boundary: missing translations, broken format (date / number
 this skill. Whether privacy / legal text describes what the app does → together
 with privacy-permissions (that member covers the code ↔ policy gap, this skill
 the text itself).
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **v2 note:** v1 looked only at the TEXT ITSELF (politeness, consistency, logic),
 which is an IMPORTANT but LESS CRITICAL layer. In a real audit (an independent

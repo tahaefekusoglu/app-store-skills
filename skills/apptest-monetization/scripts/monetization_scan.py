@@ -47,6 +47,24 @@ WEB_CHECKOUT = r"https?://(?!(?:[a-z]+\.)*apple\.com|(?:www\.)?(?:github|gitlab|
                r"/upgrade|/billing|/premium|/pro(?=[/?#]|$|[\"'`)\s]))[^\s'\"`)]*"
 UNLOCK_CODE = r"(?i)(license|licen[cs]e key|activation|unlock|serial|promo|redeem|kupon|coupon|voucher)[ _-]?(code|key|kodu)"
 OFFER_CODE = r"presentCodeRedemptionSheet|offerCodeRedemption|presentCodeRedemptionSheetIOS"
+# The word inside a user-facing string in code: "Restore Purchases", not a function called restorePurchases.
+RESTORE_LITERAL = r"""(?i)["'`>][^"'`<>\n]{0,40}\b(restore|geri yükle|wiederherstellen|restaurar|restaurer|ripristina)\b[^"'`<>\n]{0,30}["'`<]"""
+NOT_A_LABEL = re.compile(r"(?i)fail|error|success|complete|could ?n|did ?n|unable|restored")
+
+
+def has_restore_label(path):
+    """A string a user could tap. Comments, messages such as "Restore failed" and preview screens don't count."""
+    if re.search(r"(?i)preview", os.path.basename(path)):
+        return False
+    for line in scan.p_read(path, 300_000).splitlines():
+        if re.match(r"\s*(//|/\*|\*|#)", line):
+            continue
+        for m in re.finditer(RESTORE_LITERAL, line):
+            if not NOT_A_LABEL.search(m.group(0)):
+                return True
+    return False
+
+
 INCENTIVE = r"(?i)\b(rate|review)\s+(us|this app|the app|our app)\b[^\n]{0,60}(to (get|unlock|earn)|for (a reward|free|coins?)|" \
             r"and (get|earn|unlock))|\b(bizi|uygulamay[ıi])\s+(değerlendir|puanla)[^\n]{0,60}(kazan|açmak için|ödül)|" \
             r"\b(5|five) stars?\b[^\n]{0,40}(to (get|unlock|earn)|for (a reward|coins?))|5 yıldız[^\n]{0,40}(kazan|ödül|açmak)|" \
@@ -83,6 +101,10 @@ def string_texts(p) -> str:
     return "\n".join(out)
 
 
+def _dicts(value):
+    return [x for x in value if isinstance(x, dict)] if isinstance(value, list) else []
+
+
 def storekit_products(p) -> tuple[set, list]:
     ids, files = set(), []
     for f in p.files:
@@ -93,12 +115,14 @@ def storekit_products(p) -> tuple[set, list]:
         except ValueError:
             continue
         files.append(f)
-        for pr in d.get("products", []) or []:
+        if not isinstance(d, dict):
+            continue
+        for pr in _dicts(d.get("products")):
             ids.add(pr.get("productID"))
-        for g in d.get("subscriptionGroups", []) or []:
-            for sub in g.get("subscriptions", []) or []:
+        for g in _dicts(d.get("subscriptionGroups")):
+            for sub in _dicts(g.get("subscriptions")):
                 ids.add(sub.get("productID"))
-        for pr in d.get("nonRenewingSubscriptions", []) or []:
+        for pr in _dicts(d.get("nonRenewingSubscriptions")):
             ids.add(pr.get("productID"))
     return {i for i in ids if i}, files
 
@@ -174,6 +198,12 @@ def main(argv=None):
                     "code scan" + (" ('restore' appears in the strings)" if r_text else ""),
                     "3.1.1: with non-consumables and subscriptions the user must be able to restore purchases (visible button). "
                     "Not needed if only consumables (coins) are sold: not verified.")
+        elif not r_text and not any(has_restore_label(f) for f in files):
+            # A service can have the call while no screen offers it, and 3.1.1 asks for a visible way.
+            rep.add("MO-13", "REJECTION RISK", "Restore call exists, but no visible 'Restore' text was found",
+                    f"{p.rel(r_first[0])}:{r_first[1]}",
+                    "3.1.1: the user must be able to start it, usually with a button on the purchase screen. "
+                    "An icon-only or server-provided label would not be found here: not verified.")
         else:
             rep.add("MO-13", "INFO", "Restore call exists", f"{p.rel(r_first[0])}:{r_first[1]}",
                     "Verify the button is VISIBLE on the purchase screen and the result is reported afterwards.")

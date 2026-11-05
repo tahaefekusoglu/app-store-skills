@@ -18,9 +18,13 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def flutter_test(project, *args, env=None):
+    """Runs flutter test and returns (results, process). Each result is one test, keyed by its own id rather than
+    its name, since different files can hold tests with the same name. process.finished says whether the run
+    reached its end: a runner that dies partway must not look like a short, successful run."""
     p = subprocess.run(["flutter", "test", "--machine", *args], cwd=project, capture_output=True, text=True,
                        encoding="utf-8", env={**os.environ, **(env or {})}, timeout=1200)
-    names, done = {}, {}
+    suites, tests, results = {}, {}, []
+    p.finished = False
     for line in p.stdout.splitlines():
         if not line.startswith(("[", "{")):
             continue
@@ -31,31 +35,62 @@ def flutter_test(project, *args, env=None):
         for e in items if isinstance(items, list) else [items]:
             if not isinstance(e, dict):
                 continue
-            if e.get("type") == "testStart":
-                names[e["test"]["id"]] = e["test"]["name"]
-            elif e.get("type") == "testDone" and not e.get("hidden"):
-                done[names.get(e["testID"], "?")] = e["result"]
-    return done, p
+            kind = e.get("type")
+            if kind == "suite" and isinstance(e.get("suite"), dict):
+                suites[e["suite"].get("id")] = e["suite"].get("path") or ""
+            elif kind == "testStart" and isinstance(e.get("test"), dict):
+                t = e["test"]
+                tests[t.get("id")] = (t.get("name") or "?", suites.get(t.get("suiteID"), ""))
+            elif kind == "testDone" and not e.get("hidden"):
+                name, path = tests.get(e.get("testID"), ("?", ""))
+                results.append({"id": e.get("testID"), "name": name, "file": os.path.basename(path),
+                                "result": e.get("result"), "skipped": bool(e.get("skipped"))})
+            elif kind == "done":
+                p.finished = True
+    return results, p
 
 
-def check(done, problems):
-    good = 0
-    for name, result in sorted(done.items()):
+def check(results, problems, files=()):
+    """Every planned defect must fail, everything else must pass, nothing may be skipped, and every file asked
+    for must report at least one test. Returns how many results were as expected."""
+    good, seen = 0, set()
+    for r in results if isinstance(results, list) else []:
+        name, where = r["name"], (r["file"] or "?") + ": " + r["name"]
+        seen.add(r["file"])
         if name.startswith("loading "):
-            if result != "success":
-                problems.append(f"did not compile: {name}")
-        elif name.startswith("BUG-EXEMPT"):
+            if r["result"] != "success":
+                problems.append(f"did not compile: {r['file'] or name}")
             continue
+        if name.startswith("BUG-EXEMPT"):
+            continue
+        if r["skipped"]:
+            problems.append(f"SKIPPED, so not proven: {where}")
         elif name.startswith("BUG"):
-            if result == "success":
-                problems.append(f"SHOULD HAVE FAILED: {name}")
+            if r["result"] == "success":
+                problems.append(f"SHOULD HAVE FAILED: {where}")
             else:
                 good += 1
-        elif result != "success":
-            problems.append(f"FAILED: {name} ({result})")
+        elif r["result"] != "success":
+            problems.append(f"FAILED: {where} ({r['result']})")
         else:
             good += 1
+    if not isinstance(results, list):
+        problems.append("test results could not be read")
+    for f in files:
+        if os.path.basename(f) not in seen:
+            problems.append(f"no result from {os.path.basename(f)}: the run stopped early or the file did not load")
+        elif "_bug_" in f and not any(r["file"] == os.path.basename(f) and r["name"].startswith("BUG") and not r["name"].startswith("BUG-EXEMPT")
+                                       and r["result"] != "success" and not r["skipped"] for r in results):
+            problems.append(f"{os.path.basename(f)}: no planned defect was caught")
     return good
+
+
+def finished(p, problems, what):
+    """Exit 1 is expected (the planned defects fail); anything else, or no end-of-run event, means the runner broke."""
+    if not getattr(p, "finished", False):
+        problems.append(f"{what}: the test run did not reach its end")
+    if p.returncode not in (0, 1):
+        problems.append(f"{what}: the test runner exited with {p.returncode}: " + ((p.stderr or "") + (p.stdout or ""))[-300:])
 
 
 def device_tour(project, problems):
@@ -78,11 +113,11 @@ def device_tour(project, problems):
         subprocess.run(["xcrun", "simctl", "boot", ud], capture_output=True)
         subprocess.run(["xcrun", "simctl", "bootstatus", ud, "-b"], capture_output=True, timeout=400)
         done, p = flutter_test(project, "integration_test/tour_test.dart", "-d", ud)
-        real = {k: v for k, v in done.items() if not k.startswith("loading ")}
-        if not real or any(v != "success" for v in real.values()):
-            problems.append("device tour failed: " + (p.stdout + p.stderr)[-500:])
-        else:
-            print(f"device tour passed on temporary simulator: {list(real)}")
+        before = len(problems)
+        check(done, problems, ["integration_test/tour_test.dart"])
+        finished(p, problems, "device tour")
+        if len(problems) == before:
+            print("device tour passed on temporary simulator: " + ", ".join(r["name"] for r in done if not r["name"].startswith("loading ")))
     finally:
         subprocess.run(["xcrun", "simctl", "shutdown", ud], capture_output=True)
         subprocess.run(["xcrun", "simctl", "delete", ud], capture_output=True)
@@ -109,11 +144,12 @@ def main():
     # The planned date bug exists only where the clocks change, so it runs in Berlin only.
     files = sorted(os.path.join("test", f) for f in os.listdir(os.path.join(project, "test")) if "_dst_" not in f)
     done, p = flutter_test(project, *files)
-    n = check(done, problems)
-    berlin, _ = flutter_test(project, "test/time_test.dart", "test/time_dst_bug_test.dart", env={"TZ": "Europe/Berlin"})
-    n += check(berlin, problems)
-    if not done or not berlin:
-        problems.append("no tests ran: " + (p.stdout + p.stderr)[-600:])
+    n = check(done, problems, files)
+    finished(p, problems, "main run")
+    tz_files = ("test/time_test.dart", "test/time_dst_bug_test.dart")
+    berlin, pb = flutter_test(project, *tz_files, env={"TZ": "Europe/Berlin"})
+    n += check(berlin, problems, tz_files)
+    finished(pb, problems, "Berlin run")
     if "--device" in sys.argv:
         device_tour(project, problems)
     print(f"{n} results as expected · {len(problems)} problems")

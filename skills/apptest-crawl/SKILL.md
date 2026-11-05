@@ -12,9 +12,10 @@ metadata:
 
 # apptest-crawl: tap every element
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.3 · group principles
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · group principles
 `../apptest/shared/test-methods.md` (T1–T10) · rules in layout-a11y (the
 measurements live there) · report `../apptest/shared/report.md`.
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Adapts the test template to the project and writes it to
 the test folder with approval; does not add hooks to app code (T3). If it runs

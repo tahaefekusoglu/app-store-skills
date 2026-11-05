@@ -122,10 +122,12 @@ def main(argv=None):
                 continue  # defined / built at runtime / deliberately checked as absent
             if lg == "swift" and " " in ident:
                 continue  # search by visible text (not an id)
+            if re.match(r"\s*(//|#|\*|/\*)", line) or "springboard" in line.lower():
+                continue  # commented-out code; the system's own screens are not the app's
             stale.setdefault((p.rel(f), ident), t.count("\n", 0, m.start()) + 1)
     if all_defined:
         for (rel, ident), n in sorted(stale.items())[:60]:
-            rep.add("TH-10", "USER BUG", f"Element id the test looks for is not in the app: '{ident}'", f"{rel}:{n}",
+            rep.add("TH-10", "SUGGESTION", f"Element id the test looks for is not in the app: '{ident}'", f"{rel}:{n}",
                     "The test may be stale: when run it fails with 'not found'; if it searches through a 'tap if present' (tapIf) "
                     "helper, that step is SILENTLY skipped; if it does not run, it rots. "
                     "If the id is generated at runtime (string concatenation) this is not a finding (not verified). "
@@ -148,7 +150,9 @@ def main(argv=None):
             m = re.search(rx, t)
             if m:
                 rep.add(fid, sev, title, f"{rel}:{t.count(chr(10), 0, m.start()) + 1} `{m.group(0)[:40]}`", note)
-        m = re.search(SLEEP, t)
+        # Yielding to the event loop (a zero delay) is not a timed wait.
+        m = next((x for x in re.finditer(SLEEP, t)
+                  if not re.match(r"[^\n]{0,30}?(setTimeout\(\s*\w+\s*(,\s*0\s*)?\)|Duration\.zero)", t[x.start():])), None)
         if m and lg in ("swift", "js", "dart") and not re.search(r"pumpAndSettle|waitFor|expectation|eventually|until", t):
             rep.add("TH-13", "SUGGESTION", "Fixed-time wait (no condition wait)",
                     f"{rel}:{t.count(chr(10), 0, m.start()) + 1} `{m.group(0)[:30]}`",

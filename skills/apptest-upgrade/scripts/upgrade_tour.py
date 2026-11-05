@@ -17,6 +17,7 @@ data and lives only in the temporary simulator (DI-P1).
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -63,6 +64,20 @@ def listing(path):
     return out, unread
 
 
+def simulator_name(udid):
+    """The simulator's name, "" if there is none with this UDID, None if the list could not be read."""
+    try:
+        out = subprocess.run(["xcrun", "simctl", "list", "devices", "--json"], capture_output=True, text=True, timeout=60)
+        devices = json.loads(out.stdout).get("devices", {})
+    except (OSError, ValueError, subprocess.SubprocessError, AttributeError):
+        return None
+    for group in devices.values() if isinstance(devices, dict) else []:
+        for d in group if isinstance(group, list) else []:
+            if isinstance(d, dict) and d.get("udid") == udid:
+                return str(d.get("name") or "")
+    return ""
+
+
 def could_not_check(why):
     print(f"\n## upgrade tour\n- could not check: {why}")
     return 3
@@ -93,10 +108,21 @@ def main(argv=None):
     ap.add_argument("--seed")
     ap.add_argument("--verify")
     ap.add_argument("--wait", type=int, default=8)
+    ap.add_argument("--allow-any-simulator", action="store_true",
+                    help="run on a simulator this family did not create; the app and its data there are removed first")
     a = ap.parse_args(argv)
     for app in (a.old, a.new):
         if not os.path.isdir(app) or not app.endswith(".app"):
             raise SystemExit(f"not an .app folder: {app}")
+    name = simulator_name(a.udid)
+    if name is None:
+        return could_not_check("could not read the simulator list")
+    if not name:
+        raise SystemExit(f"no simulator with UDID {a.udid}")
+    if not name.startswith("apptest") and not a.allow_any_simulator:
+        # The tour uninstalls the app first, which deletes its data on that simulator.
+        raise SystemExit(f"{a.udid} is {name!r}, not a temporary simulator from sim_session.py create. The tour "
+                         "removes the app and its data there first. Create one, or pass --allow-any-simulator.")
     print(f"old: {version_of(a.old)} → new: {version_of(a.new)}")
     sh("xcrun", "simctl", "uninstall", a.udid, a.bundle, check=False)
     sh("xcrun", "simctl", "install", a.udid, a.old)

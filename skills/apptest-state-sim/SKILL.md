@@ -12,9 +12,10 @@ metadata:
 
 # apptest-state-sim: seeded random use + invariants
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.3 · group principles
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · group principles
 `../apptest/shared/test-methods.md` (T1–T10) · rules in data-integrity,
 input-actions · report `../apptest/shared/report.md`.
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Suggests invariants from the code and the user approves;
 adapts the test template and writes it to the project's test folder with

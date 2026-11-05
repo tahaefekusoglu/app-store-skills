@@ -13,13 +13,14 @@ metadata:
 
 # apptest-monetization — purchases, subscriptions, ads
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.2 · report
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · report
 `../apptest/shared/report.md` · rejection index `../apptest/shared/rejections.md`
 (R-05, R-20 … R-27, T-06). Rule text comes from the official site EVERY TIME
 (principle 7); the regional link and payment rules in 3.1.1(a) / 3.1.3 in
 particular change often: https://developer.apple.com/app-store/review/guidelines/#payments ·
 https://developer.apple.com/in-app-purchase/ ·
 https://developer.apple.com/help/app-store-connect/manage-in-app-purchases/
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Reports; does not write to code or App Store Connect.
 Creating / submitting a purchase product is the user's job (principle 16); the
@@ -108,7 +109,7 @@ python3 -I "${CLAUDE_SKILL_DIR}/../apptest-monetization/scripts/monetization_sca
 | MO-10 | Product IDs in code (compare exactly with ASC) | INFO |
 | MO-11 | Product in code but not in the StoreKit file | USER BUG |
 | MO-12 | No StoreKit configuration file | SUGGESTION |
-| MO-13 | Purchases exist, no "Restore" call | REJECTION RISK (3.1.1) |
+| MO-13 | Purchases exist, with no "Restore" call, or with a call but no visible Restore text | REJECTION RISK (3.1.1) |
 | MO-14 | No terms / privacy / renewal info on the subscription screen | REJECTION RISK (3.1.2(c)) |
 | MO-15 | Price hardcoded in code or text | USER BUG |
 | MO-16 | Outside payment / web checkout link (if purchases exist) | REJECTION RISK / SUGGESTION |

@@ -43,6 +43,7 @@ for _st in (sys.stdout, sys.stderr):
         pass
 
 SKIP_DIRS = {
+    ".claude", ".cursor", ".codex", ".agents",
     ".git", "node_modules", "build", "dist", ".dart_tool", "Pods", ".next",
     ".nuxt", "vendor", "DerivedData", ".gradle", "coverage", "out", ".venv",
     "venv", "__pycache__", "generated", ".idea", ".vscode",
@@ -483,7 +484,12 @@ def main():
         print(f"Folder does not exist or is not a folder: {a.root}", file=sys.stderr)
         sys.exit(2)
     out = a.out or tempfile.mkdtemp(prefix="copy-inventory-")
+    problem = unsafe_out(out, a.root)
+    if problem:
+        print(problem, file=sys.stderr)
+        sys.exit(2)
     os.makedirs(out, exist_ok=True)
+    open(os.path.join(out, MARKER), "w").close()
 
     if a.files:
         readers = {".arb": read_arb, ".json": read_json, ".strings": read_strings,
@@ -539,6 +545,20 @@ def main():
         p(code_langs + "\n")
     p("> This list is a CANDIDATE. Verify each item by reading the text; the meaning/behaviour (D) "
       "check is not this script's job.")
+
+
+MARKER = ".copy-inventory"
+
+
+def unsafe_out(out, root):
+    """Why writing to `out` could harm the user's files, or None. Output never goes into the project, and an
+    existing folder is reused only if this script made it."""
+    real_out, real_root = os.path.realpath(out), os.path.realpath(root)
+    if real_out == real_root or real_out.startswith(real_root.rstrip(os.sep) + os.sep):
+        return f"--out is inside the project ({root}): give a folder outside it"
+    if os.path.isdir(out) and os.listdir(out) and not os.path.exists(os.path.join(out, MARKER)):
+        return f"--out ({out}) already holds other files: give an empty folder"
+    return None
 
 
 def audit_family(fam, by_lang, langs, source, meta, out, maxrows):

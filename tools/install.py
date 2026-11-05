@@ -36,6 +36,10 @@ def main():
     if a.overlay:
         app = os.path.join(a.overlay, "app-SKILL.md")
         if os.path.isfile(app):
+            with open(app, encoding="utf-8") as fh:
+                if "~/.claude/skills" in fh.read():
+                    print("warning: the overlay's app-SKILL.md names ~/.claude/skills; use ${CLAUDE_SKILL_DIR}/.. so it "
+                          "works wherever the skills are installed", file=sys.stderr)
             shutil.copy(app, os.path.join(a.target, "app", "SKILL.md"))
         for f in glob.glob(os.path.join(a.overlay, "descriptions-*.json")):
             with open(f, encoding="utf-8") as fh:

@@ -188,6 +188,20 @@ Run `/app t rejected` and paste Apple's message. You get the current text of eac
 
 ## Reading the results
 
+`/app t quick` starts with what to look at first, then lists the rest:
+
+```text
+**Summary:** REJECTION RISK: 3 · USER BUG: 0 · SUGGESTION: 35 · INFO: 34
+
+## Start here
+
+1. **[SR-30] App has no privacy manifest (PrivacyInfo.xcprivacy)**
+2. **[SR-31] Required-reason API use may be undeclared: UserDefaults** — `App/Tabs/Tabs.swift (@AppStorage)`
+3. **[PP-30] AI is used but no user consent / disclosure was found**
+```
+
+Rejection risks and user bugs are always listed in full. Suggestions are capped at five per rule and information at one line per rule; `--json` keeps everything.
+
 | Label | Meaning |
 |---|---|
 | **REJECTION RISK** | Apple could reject the app for this |
@@ -257,17 +271,31 @@ App text is recognized in English, Turkish, German, Italian, Spanish, French and
 ## How this was tested
 
 - **Seeded defects.** Every rule in the scan scripts has a tiny project with that defect in `tests/detection/`, and CI fails if a rule has no case or stops firing. Healthy Swift and Flutter projects must stay free of rejection risks and user bugs. Three rules need live network access and are checked by hand: `SR-51`, `PP-60` and `PP-61`.
-- **Real projects.** Scans ran read-only on about 50 open-source apps. False alarms found there became regression tests in `skills/apptest/shared/regressions.py`.
+- **Real projects.** Scans ran read-only on about 50 open-source apps. Findings were sampled and read in the code, and the false alarms became tests. New rules are compared with the previous version on the same projects before they ship.
+- **Real fixes.** `tests/realworld/` scans the code just before commits that really fixed a defect, to see whether the rule would have found it:
+
+  | Rule | What was fixed | Caught | What the misses were |
+  |---|---|---|---|
+  | `NW-10` | In-app account deletion | 10 of 11 | One app with no sign of accounts in its code |
+  | `SR-30` | Privacy manifest | 11 of 12 | A plugin's manifest counted as the app's; `SR-31` still reported the gap |
+  | `MO-13` | Restore purchases | 7 of 12 | Four sold through web code only; one already had a button elsewhere |
+  | `IA-11` | Delete confirmation | 4 of 5 | One the scan did not recognize |
+  | `PP-10` | Camera permission text | 5 of 12 | Mostly no camera use visible in the code before the fix; one was a Mac target |
+
+  That is 37 of 52. It is a small sample of five rules, drawn from public, mostly small projects, and the commits were chosen by search, so read it as a sign and not a guarantee.
 - **Real runs of the test templates.** `skills/apptest/shared/proof/` builds a small app with deliberate defects, in SwiftUI (XCUITest templates) and in Flutter (Dart templates). Each template must pass on the clean app and fail on the broken one, and part of each run happens on a temporary simulator.
+- **Safety.** `tests/safety/` checks that the skills can't harm a project or mislead: no tool changes a file in it, even a read-only one; output never goes into the project or over other files; only simulators the skills created are deleted, and the upgrade tour refuses your own; links out of the project aren't read; secrets are masked; and an incomplete scan, or one with suppressed rejection risks, never reads as clean. Each protection was broken on purpose to confirm its test fails.
+- **Damaged input.** `tests/stress/` runs every scanner on projects with binary and truncated files, wrong JSON and plist shapes, named pipes, link loops and unreadable files. Each must finish and print a valid result.
 - `skills/apptest/shared/selftest.py` checks that the scripts run on your OS and Python version.
 
 **Known limits**
 
 - A seeded defect proves a rule can fire. Real projects are more varied, so scans still miss things and raise false alarms.
+- Across the 52 projects, a scan still gives a median of about 65 findings, most of them suggestions and information. Treat them as candidates.
 - The TypeScript, Jest, Detox and Maestro templates are not exercised by the proof apps. Check them in your project.
 - The fault-injection proxy has been used only with the proof app.
 - Development happened on macOS. Linux and Windows are covered only by the CI workflow in this repo.
-- Claude's automatic choice of skill was measured on Sonnet only, in a partial run: it missed some requests, but no request went to a wrong skill and unrelated requests did not trigger one.
+- Claude's automatic choice of skill was measured on Sonnet with 55 English and 30 Turkish requests, retrying only those that missed or were cut off earlier. In the final results every English request reached the right skill, and 28 Turkish ones did. The 2 that missed got no skill at all, none went to a wrong skill, and unrelated requests did not trigger one. Results vary between runs.
 
 ## Contributing
 
@@ -279,11 +307,16 @@ Before sending a change:
 python3 skills/apptest/shared/selftest.py
 python3 -B skills/apptest/shared/regressions.py
 python3 -B tests/detection/run.py                            # if you changed a scan
+python3 -B tests/safety/run.py                               # if you changed what a tool writes or deletes
+python3 -B tests/stress/run.py                               # if you changed how files are read (about 15 minutes)
+python3 -B tests/realworld/run.py                            # optional: real fixes, needs the GitHub CLI
 sh skills/apptest/shared/proof/run.sh <empty folder>         # if you changed an XCUITest template (macOS)
 python3 -I skills/apptest/shared/proof/flutter/run.py <empty folder>   # if you changed a Dart template (add --device for a simulator run)
 ```
 
-A new rule needs a seeded case in `tests/detection/cases.py`, or the detection run fails.
+A new rule needs a seeded case in `tests/detection/cases.py`, or the detection run fails. Before adding it, compare results on real projects: seeded cases show a rule can fire, not that it stays quiet where it should.
+
+**Real rejections are the most useful report.** Open an issue with Apple's rule number, the shortest form of the message with private details removed, what was wrong, and a small code example. If a scan could have caught it, it becomes a rule and a seeded case.
 
 When you fix a false alarm, add a test that reproduces the real case, then undo your fix and confirm the test fails. The family's writing rules are in `skills/apptest/shared/CONVENTIONS.md`.
 

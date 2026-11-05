@@ -226,7 +226,7 @@ def main(argv=None):
     # LA-30
     for lg, pat, title in SMALL_TAP:
         for f, n, line, m in scan.grep(p, pat, files=by_lang.get(lg, [])):
-            rep.add("LA-30", "USER BUG", title, f"{p.rel(f)}:{n} `{m.group(0).strip()[:60]}`",
+            rep.add("LA-30", "SUGGESTION", title, f"{p.rel(f)}:{n} `{m.group(0).strip()[:60]}`",
                     "Tap targets must be at least 44×44 pt (HIG); the visible size can stay small while the target grows.")
 
     # LA-40 / LA-41

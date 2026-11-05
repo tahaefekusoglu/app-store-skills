@@ -14,7 +14,7 @@ metadata:
 
 # apptest-store-readiness — submission readiness
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.2 (principles 0–17, §2–§10).
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 (principles 0–17, §2–§10).
 Rejection list: `../apptest/shared/rejections.md` (an index only; the source
 is Apple's page). Report: `../apptest/shared/report.md`.
 
@@ -23,6 +23,7 @@ settings, not App Store Connect. Upload and submit commands are only
 prepared, never run (principle 16). If the user says "fix it", it proposes
 the relevant fix and follows the project's own workflow (branch, PR)
 (principle 0).
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 ## When
 

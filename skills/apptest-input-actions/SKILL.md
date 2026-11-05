@@ -12,10 +12,11 @@ metadata:
 
 # apptest-input-actions — input and actions
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.3 · report
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · report
 `../apptest/shared/report.md`. Focused on USER BUG more than App Store rules;
 for system behaviour (keyboard, text), the current HIG page (principle 7):
 https://developer.apple.com/design/human-interface-guidelines/entering-data
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Reports only, does not change code.
 
@@ -84,7 +85,7 @@ python3 -I "${CLAUDE_SKILL_DIR}/../apptest-input-actions/scripts/input_scan.py" 
 
 | ID | Topic | Severity |
 |---|---|---|
-| IA-10 | Save / pay button open to a second tap while working | USER BUG |
+| IA-10 | Save / pay button open to a second tap while working | SUGGESTION |
 | IA-11 | Destructive action without confirmation / undo | SUGGESTION |
 | IA-12 | Number from a text field parsed without regard to the decimal separator | USER BUG |
 | IA-13 | Money amount kept in double / Float | USER BUG |

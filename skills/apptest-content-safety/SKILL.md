@@ -13,12 +13,13 @@ metadata:
 
 # apptest-content-safety: content safety and age
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.3 · report
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · report
 `../apptest/shared/report.md` · rejection index (R-11, R-47, R-51 … R-53, R-34).
 Rule text and the age rating questionnaire come from the official site EVERY TIME
 (principle 7):
 https://developer.apple.com/app-store/review/guidelines/#safety ·
 https://developer.apple.com/help/app-store-connect/reference/app-information/age-ratings-values-and-definitions/
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Reports; does not write to code or App Store Connect. The
 user fills in the age rating questionnaire; this member prepares the items and

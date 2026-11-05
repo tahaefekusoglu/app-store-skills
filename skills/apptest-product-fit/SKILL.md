@@ -14,11 +14,12 @@ metadata:
 
 # apptest-product-fit: fit for the store
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.3 · report
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · report
 `../apptest/shared/report.md` · rejection index (R-08 … R-10, R-27 … R-31,
 R-49, R-50). Rule text comes from the official site EVERY TIME (principle 7); 4.2 /
 4.3 got stricter in June 2026 with an emphasis on "low quality":
 https://developer.apple.com/app-store/review/guidelines/#design
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Reports; does not write to code, metadata or App Store
 Connect.

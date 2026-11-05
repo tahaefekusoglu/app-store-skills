@@ -13,10 +13,11 @@ metadata:
 
 # apptest-layout-a11y: layout and accessibility
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.2 · report
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · report
 `../apptest/shared/report.md` · rejection index `../apptest/shared/rejections.md`
 (R-13, R-14, R-18, R-36). Apple rules and the HIG come from the official site every
 time (principle 7): https://developer.apple.com/design/human-interface-guidelines/accessibility
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Reports, does not change code. The simulator tour does NOT
 use the user's simulator (§5.4); it restores settings (§7).
@@ -101,7 +102,7 @@ background. If intentional, write "intentional (reason)" in the report.
 | LA-20 | No label on a tappable element without text (Flutter IconButton, RN Pressable) | USER BUG |
 | LA-21 | Many SF Symbols, few labels (density) | SUGGESTION |
 | LA-22 | SwiftUI button whose whole label is a symbol, with no accessibility label | SUGGESTION (a11y) |
-| LA-30 | Tap target shrunk below 44 pt | USER BUG |
+| LA-30 | Tap target shrunk below 44 pt | SUGGESTION |
 | LA-40 | Appearance fixed (light/dark): info | INFO |
 | LA-41 | Scattered fixed colors, few adaptive colors (palette file excluded) | SUGGESTION |
 | LA-50 | iPad supported but no sign of adapting to screen size | REJECTION RISK (2.4.1): verify in the simulator |

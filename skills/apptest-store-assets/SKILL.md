@@ -14,7 +14,7 @@ metadata:
 
 # apptest-store-assets: store images
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.3 · long jobs §6 · cleanup
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · long jobs §6 · cleanup
 §7 · report `../apptest/shared/report.md` · rejection index (R-08, T-03).
 Sizes and requirements come from the official page EVERY TIME (principle 7); in 2026
 the required class changed (6.9" → "Dynamic Island medium"):
@@ -24,6 +24,7 @@ https://developer.apple.com/help/app-store-connect/reference/app-information/app
 **Default contract:** Produces and checks images; does NOT upload to App Store
 Connect (principle 16). Produced images go to the folder the user picks and are
 NOT deleted.
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 ## When
 

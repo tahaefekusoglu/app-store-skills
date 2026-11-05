@@ -62,6 +62,8 @@ def png_info(path):
         return "lfs"  # Git LFS pointer: the real image is not in this clone, could not check
     if data[:8] != b"\x89PNG\r\n\x1a\n":
         return None
+    if len(data) < 29:
+        return None  # cut off before the header ends
     w, h = struct.unpack(">II", data[16:24])
     bit, ctype, interlace = data[24], data[25], data[28]
     has_trns = b"tRNS" in data[:200000]
@@ -144,7 +146,10 @@ def check_icons(p):
             continue
         folder = os.path.dirname(cs)
         has_marketing = lfs = False
-        for img in meta.get("images", []):
+        images = meta.get("images") if isinstance(meta, dict) else None
+        for img in images if isinstance(images, list) else []:
+            if not isinstance(img, dict) or not isinstance(img.get("filename", ""), str):
+                continue  # a damaged entry
             fn = img.get("filename")
             if not fn:
                 continue
@@ -249,7 +254,8 @@ def check_plists(p):
             seen_modes.add(mode)
             add("SR-25", "SUGGESTION", f"Background mode declared: {mode}. Is it really used?", r,
                 "2.5.4: an unused mode is grounds for rejection; if used, explain in the review note how to see it.")
-        if pl.get("NSAppTransportSecurity", {}).get("NSAllowsArbitraryLoads"):
+        ats = pl.get("NSAppTransportSecurity")
+        if isinstance(ats, dict) and ats.get("NSAllowsArbitraryLoads"):
             add("SR-26", "REJECTION RISK", "ATS fully disabled (NSAllowsArbitraryLoads)", r,
                 "Apple: if the value is YES a justification is REQUIRED in review. An app connecting to addresses "
                 "the user enters (RSS reader, self-hosted server) has a legitimate reason (e.g. NetNewsWire, Immich are live); "
@@ -286,8 +292,10 @@ def check_privacy_manifest(p):
     for m in manifests:
         pl = prof.load_plist(m)
         if isinstance(pl, dict):
-            for e in pl.get("NSPrivacyAccessedAPITypes", []) or []:
-                declared.add(e.get("NSPrivacyAccessedAPIType"))
+            types = pl.get("NSPrivacyAccessedAPITypes")
+            for e in types if isinstance(types, list) else []:
+                if isinstance(e, dict):
+                    declared.add(e.get("NSPrivacyAccessedAPIType"))
     code = [f for f in p.files if os.path.splitext(f)[1] in prof.CODE_EXT and prof.ios_path(f)
             and "/test" not in "/" + p.rel(f).lower() and "Tests/" not in p.rel(f)]
     deps = "\n".join(read(f) for f in p.files if os.path.basename(f) in
@@ -301,6 +309,8 @@ def check_privacy_manifest(p):
             continue
         for f in code[:6000]:
             mm = rx.search(read(f, 300_000))
+            if mm and mm.group(0).endswith("stat(") and not f.endswith((".swift", ".m", ".mm", ".c", ".cc", ".cpp", ".h")):
+                continue  # the C function is meant; Dart's File.stat() and Node's fs.stat() are not it
             if mm:
                 used[cat] = (p.rel(f), mm.group(0))
                 break
@@ -400,9 +410,12 @@ def user_strings(path):
         except ValueError:
             return []
         out = []
-        for k, v in (data.get("strings") or {}).items():
-            for lang, loc in (v.get("localizations") or {}).items():
-                val = ((loc.get("stringUnit") or {}).get("value"))
+        strings = data.get("strings") if isinstance(data, dict) else None
+        for k, v in (strings.items() if isinstance(strings, dict) else []):
+            locs = v.get("localizations") if isinstance(v, dict) else None
+            for lang, loc in (locs.items() if isinstance(locs, dict) else []):
+                unit = loc.get("stringUnit") if isinstance(loc, dict) else None
+                val = unit.get("value") if isinstance(unit, dict) else None
                 if val:
                     out.append((f"{k}[{lang}]", val))
         return out
@@ -414,9 +427,23 @@ def user_strings(path):
             if ":" in line and not line.lstrip().startswith("#")]
 
 
+LANG_TAG = re.compile(r"(?:^|[/_.-])([a-z]{2})(?:[-_][A-Za-z]{2,4})?(?:\.lproj/|\.json$|\.arb$)")
+
+
+def is_source_language(path, files):
+    """With an English or Base file present, translations of the same text are not reported again."""
+    if not any(re.search(r"(?:^|[/_.-])en(?:[-_][A-Za-z]{2,4})?(?:\.lproj/|\.json$|\.arb$)|Base\.lproj/", x) for x in files):
+        return True
+    if "Base.lproj/" in path:
+        return True
+    tag = LANG_TAG.search(path)
+    return tag is None or tag.group(1) in ("en", "tr")
+
+
 def check_placeholders(p):
     hits = 0
-    for f in string_files(p):
+    files = string_files(p)
+    for f in files:
         for key, text in user_strings(f):
             m = PLACEHOLDER.search(text)
             if m and re.search(r"(?i)placeholder", str(key)):
@@ -425,7 +452,7 @@ def check_placeholders(p):
                 hits += 1
                 add("SR-40", "REJECTION RISK", f"Placeholder in user-facing text: {m.group(0)!r} ({text[:60]!r})",
                     f"{p.rel(f)} › {key}", "2.1: the final version must not contain placeholder content.")
-            elif COMING_SOON.search(text) and hits < 25:
+            elif COMING_SOON.search(text) and hits < 25 and is_source_language(f, files):
                 hits += 1
                 add("SR-42", "SUGGESTION", f"'Coming soon' wording: {text[:60]!r}", f"{p.rel(f)} › {key}",
                     "If it describes a FEATURE that does not work yet, it is rejected under 2.1; a content label is not a finding.")
@@ -442,6 +469,9 @@ def check_placeholders(p):
             if not dev_host(m.group(1)):
                 continue
             ls = t.rfind("\n", 0, m.start()) + 1
+            le = t.find("\n", m.end())
+            if re.search(r"hasPrefix|startsWith|\.replace\(|replacingOccurrences|\.listen\(|process\.argv", t[ls:le]):
+                continue  # recognizes or rewrites an address, or is a helper script
             if re.match(r"\s*(//|/\*|\*|#|<!--|--)", t[ls:m.start()]):
                 continue  # comment line (sample / docs)
             line = t.count("\n", 0, m.start()) + 1

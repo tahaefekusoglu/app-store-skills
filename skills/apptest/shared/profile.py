@@ -47,6 +47,8 @@ SKIP_DIRS = {
     ".gradle", ".idea", ".vscode", "dist", ".next", ".expo", "vendor", "Carthage",
     ".build", ".swiftpm", "obj", "bin", "coverage", ".fvm",
     "ephemeral", ".symlinks", "xcuserdata", "__pycache__", ".apptest",
+    # Coding agents' folders: skills installed into a project are not the app (they once flooded a scan).
+    ".claude", ".cursor", ".codex", ".agents",
     ".buildkite", ".husky",
 }
 # Non-iOS folders in multi-platform projects (Flutter, RN, KMP): the Info.plist,
@@ -71,6 +73,8 @@ def ios_path(f: str) -> bool:
     low = _inner(f).lower()
     if any(low.startswith(x) for x in _UNUSED_PACKAGES):
         return False
+    if "/web/ios/" in low:  # a web app's Capacitor shell, e.g. apps/web/ios/App: this is the iOS project
+        low = low.replace("/web/ios/", "/ios/", 1)
     return not any(d in low for d in NON_IOS_DIRS)
 
 
@@ -166,7 +170,12 @@ def _root_non_app(root: str, d: str) -> bool:
         or os.path.exists(os.path.join(root, d, "Dockerfile"))
 
 
+def _inside(path: str, root: str) -> bool:
+    return path == root or path.startswith(root.rstrip(os.sep) + os.sep)
+
+
 def walk(p: Profile):
+    root_real = os.path.realpath(p.root)
     for dirpath, dirnames, filenames in os.walk(p.root):
         unity = "ProjectSettings" in dirnames
         at_root = os.path.abspath(dirpath) == os.path.abspath(p.root)
@@ -174,8 +183,13 @@ def walk(p: Profile):
                        and not (unity and d in UNITY_CACHE_DIRS)
                        and not (at_root and _root_non_app(p.root, d))]
         for f in filenames:
+            path = os.path.join(dirpath, f)
+            if os.path.islink(path) and not _inside(os.path.realpath(path), root_real):
+                continue  # a link out of the project: its target is not the user's app, and may be private
+            if not os.path.isfile(path):
+                continue  # a named pipe or device would block a read forever; a dead link has nothing to read
             # Paths use "/" on every OS: test / generated file patterns look for "/" (Windows gives "\\").
-            p.files.append(os.path.join(dirpath, f).replace("\\", "/"))
+            p.files.append(path.replace("\\", "/"))
             if len(p.files) >= MAX_FILES:
                 p.truncated = True
                 _set_unused(p)
@@ -235,7 +249,8 @@ def detect_tech(p: Profile) -> dict:
             cfg = json.loads(read(f))
         except ValueError:
             continue
-        ios = (cfg.get("expo") or cfg).get("ios") if isinstance(cfg, dict) else None
+        expo = (cfg.get("expo") or cfg) if isinstance(cfg, dict) else None
+        ios = expo.get("ios") if isinstance(expo, dict) else None
         if isinstance(ios, dict):
             r = p.rel(f)
             if ios.get("bundleIdentifier"):
@@ -256,7 +271,8 @@ def detect_tech(p: Profile) -> dict:
                 p.add("background:" + str(mode), True, "certain", r)
             if ios.get("privacyManifests"):
                 p.add("store:privacy manifest", ["app.json › ios.privacyManifests"], "certain", r)
-        ver = (cfg.get("expo") or {}).get("version") if isinstance(cfg, dict) else None
+        expo = cfg.get("expo") if isinstance(cfg, dict) else None
+        ver = expo.get("version") if isinstance(expo, dict) else None
         if ver:
             p.add("setting:version (app.json)", ver, "certain", p.rel(f))
     for f in find(p, lambda f: name(f) in ("build.gradle.kts", "build.gradle")):
@@ -607,7 +623,8 @@ def detect_ios(p: Profile, ctx: dict):
         if "ITSAppUsesNonExemptEncryption" in pl:
             p.add("store:encryption declaration (ITSAppUsesNonExemptEncryption)",
                   pl["ITSAppUsesNonExemptEncryption"], "certain", r)
-        ext = (pl.get("NSExtension") or {}).get("NSExtensionPointIdentifier")
+        extension = pl.get("NSExtension")
+        ext = extension.get("NSExtensionPointIdentifier") if isinstance(extension, dict) else None
         if ext:
             p.add("target:" + EXT_POINTS.get(ext, ext), True, "certain", r)
         locs = pl.get("CFBundleLocalizations")
@@ -618,7 +635,8 @@ def detect_ios(p: Profile, ctx: dict):
         orient = pl.get("UISupportedInterfaceOrientations")
         if orient:
             p.add("setting:orientations (iPhone)", [o.replace("UIInterfaceOrientation", "") for o in orient], "certain", r)
-        if pl.get("NSAppTransportSecurity", {}).get("NSAllowsArbitraryLoads"):
+        ats = pl.get("NSAppTransportSecurity")
+        if isinstance(ats, dict) and ats.get("NSAllowsArbitraryLoads"):
             p.add("network:ATS relaxed (NSAllowsArbitraryLoads)", True, "certain", r)
         if pl.get("LSApplicationQueriesSchemes"):
             p.add("setting:queried URL schemes", pl["LSApplicationQueriesSchemes"][:8], "certain", r)

@@ -12,10 +12,11 @@ metadata:
 
 # apptest-lifecycle — data and state across transitions
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.3 · group principles
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · group principles
 `../apptest/shared/test-methods.md` (T1–T10) · related rules
 data-integrity (persistent data), privacy-permissions (permissions), time-travel
 (long background) · report `../apptest/shared/report.md`.
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Scans and provides a transition plan and templates; writes
 tests into the project only with approval. Adds no hooks to app code (T3).

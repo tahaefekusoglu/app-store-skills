@@ -2,6 +2,8 @@
 name: app
 description: "Short commands for the app-store-skills family: /app t double, c privacy, d design. t = run and try the app, c = check rules and code, d = Apple design suggestions. Also t quick, t release, t rejected."
 argument-hint: "[t|c|d] [name] [project path]"
+metadata:
+  version: "1.1.0"
 allowed-tools:
   - Skill
   - Read
@@ -20,6 +22,8 @@ Routes only: turns a short name into a member and calls it with the `Skill` tool
 - No project path means the working folder. The path and any extra words go to the member as `args`.
 - In chat this runs only on a known name. A lone "t", or similar words inside a sentence, is not a call.
 - No match or an empty call: show the list below, suggest the closest name, run nothing.
+
+After a member finishes, follow its ending (CONVENTIONS §11): one recommended next step, no list of everything available.
 
 ## t: runs and tries the app
 

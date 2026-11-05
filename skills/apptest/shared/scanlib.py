@@ -106,7 +106,8 @@ def load_suppressed(root: str) -> dict[str, str]:
     The id can be a single item (LA-11) or a member prefix (LA-*). {id: reason}."""
     path = os.path.join(root, ".apptest", "profile.md")
     try:
-        text = open(path, encoding="utf-8").read()
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            text = fh.read()
     except OSError:
         return {}
     m = re.search(r"(?ims)^##\s*(?:Suppressed|Kapat[ıi]lanlar)\s*$(.*?)(?=^##\s|\Z)", text)

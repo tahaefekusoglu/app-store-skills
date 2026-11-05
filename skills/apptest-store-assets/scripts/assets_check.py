@@ -107,6 +107,13 @@ def jpeg_size(data: bytes):
 
 
 def image_info(path: str):
+    try:
+        return read_image(path)
+    except (struct.error, IndexError):
+        return None  # a damaged file: reported as unreadable
+
+
+def read_image(path: str):
     with open(path, "rb") as fh:
         data = fh.read()
     if data[:8] == b"\x89PNG\r\n\x1a\n":

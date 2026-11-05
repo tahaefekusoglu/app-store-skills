@@ -12,9 +12,10 @@ metadata:
 
 # apptest-device-tour — real simulator tour
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.3 (§5, §6, §7) · group principles
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 (§5, §6, §7) · group principles
 `../apptest/shared/test-methods.md` (T1–T10) · report
 `../apptest/shared/report.md`. Shared tool: `../apptest/shared/sim_session.py`.
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Runs the tests; does not add hooks to app code
 silently (T3). The user's simulator / device is not used (DT-P1).

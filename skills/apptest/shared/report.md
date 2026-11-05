@@ -42,6 +42,9 @@ Apple rules: "Last Updated <date>", read from the official page on <today>
 
 ## Cleanup failed
 <simulator / process / file left behind and how to clean it>
+
+## Next
+<one recommended step and why, as a question when you can do it yourself (CONVENTIONS §11); left out if nothing is needed>
 ```
 
-Short report (quick tour, few findings): Summary + findings + Environment is enough.
+Short report (quick tour, few findings): Summary + findings + Environment + Next is enough.

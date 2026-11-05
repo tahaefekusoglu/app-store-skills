@@ -45,7 +45,7 @@ UI_INPUT = r"TextField|UITextField|TextFormField|TextInput|onChangeText|onChange
            r"UITextView|SecureField|EditText|<input"
 NUM_PARSE = {
     "dart": r"\b(double|num)\.(parse|tryParse)\(" + _TXT,
-    "swift": r"\b(Double|Float|CGFloat)\(" + _TXT + r"|Decimal\(\s*string\s*:",
+    "swift": r"\b(Double|Float)\(" + _TXT + r"|Decimal\(\s*string\s*:",
     "js": r"\bparseFloat\(" + _TXT + r"|\bNumber\(" + _TXT,
     "kotlin": r"(text|input|value)\w*(\.toString\(\))?\.toDouble\(\)",
 }
@@ -56,7 +56,7 @@ MONEY_FILE = re.compile(r"(?i)(?<![a-z])(currency|price|pricing|payment|invoice|
                         r"fiyat|bakiye|pledge|checkout|subtotal)|NumberFormat\.simpleCurrency|[€£₺¥]")
 MONEY_FLOAT = {
     "dart": r"\b(double|num)\s+(price|amount|total|balance|cost|fee|subtotal|tax|tutar|fiyat|bakiye)\w*\b",
-    "swift": r"\b(var|let)\s+(price|amount|total|balance|cost|fee|subtotal|tutar|fiyat|bakiye)\w*\s*:\s*(Double|Float|CGFloat)\b",
+    "swift": r"\b(var|let)\s+(price|amount|total|balance|cost|fee|subtotal|tutar|fiyat|bakiye)\w*\s*:\s*(Double|Float)\b",
     "js": r"\b(price|amount|total|balance|cost|fee)\w*\s*[:=]\s*parseFloat\(",
     "kotlin": r"\b(val|var)\s+(price|amount|total|balance|cost|fee)\w*\s*:\s*(Double|Float)\b",
 }
@@ -112,7 +112,7 @@ def main(argv=None):
                 w = re.search(r"await[^\n;]{0,80}" + WRITE_VERB, body)
                 if w:
                     n = text.count("\n", 0, m.start()) + 1
-                    rep.add("IA-10", "USER BUG", "Saving button may be open to a second tap while working",
+                    rep.add("IA-10", "SUGGESTION", "Saving button may be open to a second tap while working",
                             f"{p.rel(f)}:{n} `{w.group(0)[:50]}`",
                             "Two quick taps can create two saves / two payments. Disabling the button while working, or "
                             "single-flight, is one way. Verify with rapid-input.")
@@ -122,9 +122,12 @@ def main(argv=None):
     for lg, pat in DESTRUCTIVE_UI.items():
         for f in by_lang.get(lg, []):
             text = scan.p_read(f)
-            if not re.search(pat, text) or not re.search(DELETE_CALL, text) or re.search(CONFIRM, text):
+            # Near each button, not the whole file: one dialog elsewhere in a big file says nothing about this button.
+            m = next((x for x in re.finditer(pat, text)
+                      if re.search(DELETE_CALL, text[max(0, x.start() - 300):x.end() + 500])
+                      and not re.search(CONFIRM, text[max(0, x.start() - 300):x.end() + 500])), None)
+            if not m:
                 continue
-            m = re.search(pat, text)
             n = text.count("\n", 0, m.start()) + 1
             rep.add("IA-11", "SUGGESTION", "Destructive action (delete / remove) may have no confirmation or undo",
                     f"{p.rel(f)}:{n}", "An accidental tap loses data: a confirmation dialog or 'Undo' is one way "
@@ -166,6 +169,8 @@ def main(argv=None):
         for f, n, line, m in scan.grep(p, pat, files=by_lang.get(lg, []), max_hits=6):
             if "characters" in line or "graphemes" in line or "Intl.Segmenter" in line:
                 continue
+            if re.search(r"\b(length|count)\s*(?:===?|!==?|>|<=)\s*0\b", line):
+                continue  # asking "is it empty?": the unit does not change the answer
             rep.add("IA-14", "SUGGESTION", "Text length measured in UTF-16 units (emoji / combining letters count as 2+)",
                     f"{p.rel(f)}:{n} `{m.group(0)[:50]}`",
                     "The limit does not match the character count the user sees (👍🏽 = 4 units). Dart: characters.length; "

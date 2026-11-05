@@ -13,10 +13,11 @@ metadata:
 
 # apptest-locale-time — language, region, calendar, time
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.2 · report
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · report
 `../apptest/shared/report.md`. Read Apple's localization guide in its current
 version every time (principle 7):
 https://developer.apple.com/documentation/xcode/localization
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Reports only, does not change code. Does NOT TOUCH the
 Mac's clock, time zone or language (test-methods T4): only inside the test
@@ -101,7 +102,7 @@ For missing / untranslated keys and placeholder mismatches:
 | LT-10 | Calendar day calculated as 24 hours (adding seconds to a date, dividing a duration by 86400, local `difference().inDays`) | USER BUG |
 | LT-20 | Hardcoded date pattern shown to the user | SUGGESTION |
 | LT-21 | Money / number in a fixed format (separator, symbol) | SUGGESTION |
-| LT-30 | Hardcoded left/right — only if a right-to-left language is supported | USER BUG |
+| LT-30 | Hardcoded left/right — only if a right-to-left language is supported | SUGGESTION |
 | LT-40 | Translation system exists but text is hardcoded — only if multi-language | USER BUG |
 | LT-41 | Number + fixed plural word | SUGGESTION |
 | LT-50 | Calendar calculation in the user's calendar (non-Gregorian risk) | SUGGESTION |

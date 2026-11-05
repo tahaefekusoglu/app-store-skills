@@ -13,12 +13,13 @@ metadata:
 
 # apptest-network — network, accounts, servers
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.2 · group principles
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · group principles
 (for dynamic trials) `../apptest/shared/test-methods.md` · report
 `../apptest/shared/report.md` · rejection index (R-07, R-16, R-35, R-40, R-55).
 Rule text comes from the official site EVERY TIME (principle 7):
 https://developer.apple.com/app-store/review/guidelines/ ·
 https://developer.apple.com/support/offering-account-deletion-in-your-app/
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Reports; does not touch code, servers or accounts.
 The script stays off the network. Secret keys are masked in the report (principle 17).
@@ -92,7 +93,7 @@ python3 -I "${CLAUDE_SKILL_DIR}/../apptest-network/scripts/network_scan.py" <roo
 
 | ID | Topic | Severity |
 |---|---|---|
-| NW-10 | Accounts can be created, no in-app deletion (or: deletion exists / no creation — info) | REJECTION RISK (5.1.1(v)) |
+| NW-10 | Accounts can be created, no in-app deletion. Sign in with Apple, Firebase or a hosted auth service counts as creating accounts; other sign-in only as a suggestion. Deletion exists: info | REJECTION RISK (5.1.1(v)) |
 | NW-11 | Third-party sign-in present, no Sign in with Apple | REJECTION RISK (4.8) |
 | NW-12 | Network used, connection state not monitored | SUGGESTION (2.1) |
 | NW-13 | Unencrypted `http://` (excluding local / schema / sample / test addresses) | USER BUG (1.6) |

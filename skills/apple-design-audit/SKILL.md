@@ -18,6 +18,7 @@ sibling `../apple-design-advisor/SKILL.md` · measurements in apptest-layout-a11
 **Default contract:** Reports, does not change code. Runs only when the user asks; it is not part of
 apptest's full tour and is not suggested unprompted. apptest keeps its "stays out of design" principle;
 design commentary happens only in this family.
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 ## When to use
 

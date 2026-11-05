@@ -12,12 +12,13 @@ metadata:
 
 # apptest-data-integrity — data integrity
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.2 · for dynamic tries
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 · for dynamic tries
 `../apptest/shared/test-methods.md` · report `../apptest/shared/report.md`.
 Not directly an App Store rule, focused on USER BUG; only for account / data
 deletion (5.1.1(v)) and the iOS data storage guideline is Apple's current page
 read (principle 7):
 https://developer.apple.com/documentation/foundation/optimizing-your-app-s-data-for-icloud-backup
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Reports only; does not touch code or data. Destructive
 tries (deleting, corrupting, interrupting) happen only on COPIED data in a

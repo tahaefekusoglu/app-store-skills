@@ -81,14 +81,22 @@ def invalid_report(data) -> str | None:
             return f"finding {i} is not an object"
         if not isinstance(f.get("id"), str) or not f["id"]:
             return f"finding {i} has no id"
-        if f.get("severity") not in ORDER:
+        if not isinstance(f.get("severity"), str) or f["severity"] not in ORDER:
             return f"finding {i} has an unknown severity"
-        for k in ("title", "evidence", "note"):
+        if not isinstance(f.get("title"), str) or not f["title"].strip():
+            return f"finding {i} has no title"
+        for k in ("evidence", "note"):
             if not isinstance(f.get(k, ""), str):
                 return f"finding {i}: {k} is not text"
     for k, kind in (("suppressed", dict), ("suppressed_risk", list), ("skipped", list), ("truncated", list)):
         if not isinstance(data.get(k, kind()), kind):
             return f"{k} has the wrong type"
+    # Their items are joined and sorted into the report, so each one must be text.
+    for k in ("suppressed_risk", "skipped", "truncated"):
+        if not all(isinstance(x, str) for x in data.get(k, [])):
+            return f"{k} holds something that is not text"
+    if not all(isinstance(k, str) and isinstance(v, (int, str)) for k, v in data.get("suppressed", {}).items()):
+        return "suppressed holds something that is not a count"
     return None
 
 
@@ -110,6 +118,78 @@ def run(script: str, root: str, extra: list[str]) -> tuple[dict | None, str, flo
     if bad:
         return None, f"script output is not in the expected format: {bad}", time.time() - t0
     return data, "", time.time() - t0
+
+
+# These stop an upload or commonly cause a rejection, so they come first when choosing what to fix.
+FIRST_RULES = ("SR-61", "SR-13", "SR-10", "SR-11", "SR-22", "SR-21", "SR-23", "SR-30", "SR-31", "PP-10", "NW-10", "MO-13", "MO-14")
+START_HERE_LIMIT = 5
+SHOW_PER_RULE = 5
+
+
+def start_here(merged):
+    """At most five things to look at first: the most serious, one line per rule, with how many there are."""
+    serious = [f for f in merged if f["severity"] in ("REJECTION RISK", "USER BUG")]
+    counts = {}
+    for f in serious:
+        counts[f["id"]] = counts.get(f["id"], 0) + 1
+    first = {}
+    for f in serious:
+        first.setdefault(f["id"], f)
+
+    def rank(f):
+        fixed = FIRST_RULES.index(f["id"]) if f["id"] in FIRST_RULES else len(FIRST_RULES)
+        return (0 if f["severity"] == "REJECTION RISK" else 1, fixed, f["id"])
+
+    return [{"id": f["id"], "severity": f["severity"], "title": f["title"], "evidence": f["evidence"],
+             "count": counts[f["id"]]} for f in sorted(first.values(), key=rank)[:START_HERE_LIMIT]]
+
+
+# Which short command looks closer at each scan. Only the ones a person would run next.
+NEXT_COMMAND = {"SR": "c ready", "PP": "c privacy", "MO": "c money", "NW": "c account", "PF": "c product", "CS": "c content",
+                "LA": "c layout", "LT": "c locale", "DI": "c data", "IA": "c input", "TS": "t plan", "TH": "t health",
+                "TT": "t time", "RI": "t double", "LC": "t lifecycle", "VI": "t visual", "NC": "t network", "PE": "t persona"}
+
+
+def next_steps(first):
+    """The member to open for each Start here item, in the same order, without repeats."""
+    steps = {}
+    for x in first:
+        code = x["id"].split("-")[0]
+        if code in NEXT_COMMAND:
+            steps.setdefault(NEXT_COMMAND[code], []).append(x["id"])
+    return [{"command": c, "rules": r} for c, r in steps.items()]
+
+
+def print_findings(merged):
+    """Serious findings in full. Lower ones are capped per rule, and INFO is one line per rule: JSON keeps everything."""
+    cur = None
+    shown = {}
+    for f in merged:
+        if f["severity"] != cur:
+            cur = f["severity"]
+            print(f"\n## {cur}")
+            if cur == "INFO":
+                by_rule = {}
+                for x in merged:
+                    if x["severity"] == "INFO":
+                        by_rule.setdefault(x["id"], []).append(x)
+                for rule, items in by_rule.items():
+                    text = "; ".join(i["title"] for i in items[:2])
+                    more = f" (+{len(items) - 2} more)" if len(items) > 2 else ""
+                    print(f"- [{rule}] {text}{more}")
+                return
+        limited = cur == "SUGGESTION"
+        shown[f["id"]] = shown.get(f["id"], 0) + 1
+        if limited and shown[f["id"]] > SHOW_PER_RULE:
+            continue
+        also = f" (also: {', '.join(f['also'])})" if f["also"] else ""
+        note = f" — {f['note']}" if f.get("note") else ""
+        print(f"- [{f['id']}]{also} {f['title']} — `{f['evidence']}`{note}")
+        for d in f["also_detail"]:
+            print(f"  - {d['id']} same issue: {d['title']}" + (f" — {d['note']}" if d.get("note") else ""))
+        total = sum(1 for x in merged if x["id"] == f["id"] and x["severity"] == cur)
+        if limited and shown[f["id"]] == SHOW_PER_RULE and total > SHOW_PER_RULE:
+            print(f"- [{f['id']}] and {total - SHOW_PER_RULE} more like this (--json lists all)")
 
 
 def main(argv=None):
@@ -169,7 +249,7 @@ def main(argv=None):
     merged.sort(key=lambda f: (ORDER.get(f["severity"], 9), f["id"]))
     partial = sorted({x for r in results.values() for x in r["partial"]})
     if a.json:
-        json.dump({"root": os.path.abspath(a.root), "members": results, "findings": merged,
+        json.dump({"root": os.path.abspath(a.root), "members": results, "findings": merged, "start_here": start_here(merged), "next": next_steps(start_here(merged)),
                    "problems": problems, "execution_complete": not problems, "coverage_partial": partial,
                    "complete": not problems and not partial}, sys.stdout, ensure_ascii=False, indent=1)
         print()
@@ -185,6 +265,25 @@ def main(argv=None):
         if f["id"] == "SR-09":
             print(f"> **{f['title']}** {f.get('note', '')}\n")
     print("**Summary:** " + " · ".join(f"{k}: {v}" for k, v in cnt.items()) + "\n")
+    first = start_here(merged)
+    hidden = sorted({k for r in results.values() for k in r["suppressed_risk"]})
+    print("## Start here\n")
+    if first:
+        for i, x in enumerate(first, 1):
+            more = f" ({x['count']} places)" if x["count"] > 1 else ""
+            print(f"{i}. **[{x['id']}] {x['title']}**{more} — `{x['evidence']}`")
+    elif problems or partial:
+        print("Nothing serious found in what was read, but the scan is INCOMPLETE (see below), so this is not a clean "
+              "result.")
+    elif hidden:
+        print("Nothing serious is showing, but only because rejection risks are suppressed (below).")
+    else:
+        print("No rejection risks or user bugs among the static candidates. Tours and manual lists are still to do.")
+    if hidden:
+        # The user chose to hide these, but a summary must not read as if they were gone.
+        print(f"\n**Suppressed rejection risks:** {', '.join(hidden)} (in `.apptest/profile.md`). "
+              "They are hidden, not fixed.")
+    print()
     if partial:
         print("**Partial scan:** " + "; ".join(partial) + "\n")
     print("| Member | Candidates | Time | Note |\n|---|---|---|---|")
@@ -197,16 +296,12 @@ def main(argv=None):
         if r["suppressed"]:
             note += " suppressed: " + ", ".join(f"{k}×{v}" + (" (rejection risk)" if k in r["suppressed_risk"] else "") for k, v in r["suppressed"].items())
         print(f"| {code} | {r['candidates']} | {r['seconds']} s | {note.strip()} |")
-    cur = None
-    for f in merged:
-        if f["severity"] != cur:
-            cur = f["severity"]
-            print(f"\n## {cur}")
-        also = f" (also: {', '.join(f['also'])})" if f["also"] else ""
-        note = f" — {f['note']}" if f.get("note") else ""
-        print(f"- [{f['id']}]{also} {f['title']} — `{f['evidence']}`{note}")
-        for d in f["also_detail"]:
-            print(f"  - {d['id']} same issue: {d['title']}" + (f" — {d['note']}" if d.get("note") else ""))
+    print_findings(merged)
+    steps = next_steps(first)
+    if steps:
+        print("\n## Next\n\nThese scans only point. To verify an item against the code and Apple's current rules:\n")
+        for x in steps:
+            print(f"- `/app {x['command']}` for {', '.join(x['rules'])}")
     if problems:
         print("\n## Scan incomplete\nThese members gave no result; this does not count as \"no findings\":\n" + "\n".join(f"- {x}" for x in problems))
         return 3

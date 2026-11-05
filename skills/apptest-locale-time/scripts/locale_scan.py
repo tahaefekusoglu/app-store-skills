@@ -36,7 +36,8 @@ DAY_MATH = {
 }
 UTC_SAFE = re.compile(r"(?i)\butc\b|toUtc|DateTime\.utc|isUtc|TimeZone\(identifier:\s*\"UTC|GMT")
 DEV_SCREEN = re.compile(r"(?i)(debug|developer|betatools|beta ?tools|designsystem|design ?system|internal|"
-                        r"playground|sample|example|preview|storybook|fixture|mock|feature_?flags?|featureflags?)")
+                        r"playground|sample|example|preview|storybook|fixture|mock|feature_?flags?|featureflags?|"
+                        r"automation|component_?library|dev_?mode|\.cl\.tsx)")
 
 
 # LT-20: hardcoded date pattern shown to the user
@@ -47,7 +48,7 @@ FIXED_DATE_FMT = {
     "js": r"\.format\(\s*['\"](DD|MM|YYYY|dd|yyyy|HH|hh)[^'\"]*['\"]\s*\)|toLocale(Date|Time)?String\(\s*['\"][a-z]{2}-[A-Z]{2}['\"]",
     "csharp": r"\.ToString\(\s*\"(dd|MM|yyyy|HH)[^\"]*\"\s*\)",
 }
-POSIX = re.compile(r"en_US_POSIX|ISO8601|iso8601|\.iso\b|RFC|parse|Parse|decode|encode|api|API|server|json|JSON|log")
+POSIX = re.compile(r"en_US_POSIX|'GMT'|ISO8601|iso8601|\.iso\b|RFC|parse|Parse|decode|encode|api|API|server|json|JSON|log")
 
 # LT-21: fixed money / number format
 FIXED_MONEY = {
@@ -65,7 +66,8 @@ LEFT_RIGHT = {
     # forceLeftToRight is a deliberate choice (e.g. Wikipedia — supports RTL well, forces LTR for certain content).
     "dart": r"EdgeInsets\.only\(\s*(left|right)\s*:|EdgeInsets\.fromLTRB|Alignment\.(center|top|bottom)(Left|Right)\b|"
             r"TextAlign\.(left|right)\b|Positioned\([^)]*\b(left|right)\s*:",
-    "js": r"\b(marginLeft|marginRight|paddingLeft|paddingRight|borderLeftWidth|borderRightWidth)\s*:|textAlign\s*:\s*['\"](left|right)['\"]",
+    # React Native flips left and right margins, padding and positions by itself in RTL, so only text alignment is left.
+    "js": r"textAlign\s*:\s*['\"](left|right)['\"]",
 }
 
 # LT-40: hardcoded user text in code while a translation system exists
@@ -159,7 +161,7 @@ def main(argv=None):
                 if re.search(r"RTL|[Rr]tl(?=\W)|(?i:RightToLeft|LeftToRight|layoutDirection|TextDirection\.|"
                              r"Directionality|semanticContentAttribute|I18nManager)", line):
                     continue
-                rep.add("LT-30", "USER BUG", f"Hardcoded left/right — wrong in right-to-left languages ({', '.join(rtl)})",
+                rep.add("LT-30", "SUGGESTION", f"Hardcoded left/right — wrong in right-to-left languages ({', '.join(rtl)})",
                         f"{p.rel(f)}:{n} `{m.group(0)[:40]}`",
                         "leading/trailing, start/end, EdgeInsetsDirectional are one way; verify in the simulator in an RTL language.")
     else:
@@ -169,7 +171,7 @@ def main(argv=None):
     if len(langs) > 1:
         for lg, pat in HARDCODED_UI.items():
             for f, n, line, m in scan.grep(p, pat, files=by_lang.get(lg, [])):
-                literal = re.sub(r"\\\([^)]*\)|\$\{[^}]*\}|\$\w+", "", m.group(0))
+                literal = re.sub(r"\\\([^)]*\)?|\$\{[^}]*\}?|\$\w+", "", m.group(0))
                 if re.search(r"://|^\W*[\w.-]+@[\w.-]+|\.(com|org|net|io|app)\b", literal.split("(", 1)[-1]):
                     continue  # address / email sample: not text to translate
                 ctx = window(f, n, 12, 2)
@@ -178,7 +180,8 @@ def main(argv=None):
                 if re.search(r"\bDEBUG\b", literal) or re.search(r"#if\s+DEBUG|kDebugMode|__DEV__", ctx):
                     continue  # text visible only in developer builds (e.g. Pocket Casts "(DEBUG)" warning)
                 if L10N_CALL.search(line) or DEV_SCREEN.search(p.rel(f)) or \
-                        not re.search(r"[A-Za-zÇĞİÖŞÜçğıöşüÀ-ÿ]{3}", literal.split("(", 1)[-1].split("=", 1)[-1]):
+                        not re.search(r"[A-Za-zÇĞİÖŞÜçğıöşüÀ-ÿ]{3}", re.sub(r"\\\([^)]*\)|\$\{[^}]*\}|\$\w+", "",
+                                                                      literal.split("(", 1)[-1].split("=", 1)[-1].replace("verbatim", ""))):
                     continue
                 rep.add("LT-40", "USER BUG", "Translation system exists but text is hardcoded (will not be translated)",
                         f"{p.rel(f)}:{n} `{m.group(0)[:60]}`",

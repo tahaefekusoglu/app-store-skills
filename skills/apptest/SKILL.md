@@ -160,6 +160,10 @@ compare each with the official rule text (principle 7) and the code; report find
 with the note "manual check (member does not exist yet)". Do not invent checks
 (principle 9).
 
+## Talking with the user
+
+`shared/CONVENTIONS.md` §11 applies to every mode: when to ask, status lines, one next step at the end.
+
 ## Rejection mode
 
 1. Extract the rule numbers from Apple's message; read the CURRENT official text of
@@ -169,6 +173,10 @@ with the note "manual check (member does not exist yet)". Do not invent checks
 3. Ways to fix + a short, polite, concrete draft reply for Resolution Center (the
    user sends it; principle 16).
 4. If needed, suggest store-readiness's Release section for the new build.
+
+**Learning from it.** After the fix, ask whether a scan could have caught this. If so, offer to write it up for
+the user to send to the family's repository: Apple's rule number, the shortest form of the message (no private
+details), what was wrong, and a small example of the code. Don't send anything yourself.
 
 ## Report
 

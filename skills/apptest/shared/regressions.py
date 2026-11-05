@@ -45,6 +45,11 @@ class ReviewRegressions(unittest.TestCase):
         p = patch.object(sim, 'CACHE', str(self.root / 'cache'))
         p.start()
         self.addCleanup(p.stop)
+        # Simulators in these tests are the family's own unless a test says otherwise.
+        for mod in (sim, upgrade):
+            q = patch.object(mod, 'simulator_name', return_value='apptest-fixture')
+            q.start()
+            self.addCleanup(q.stop)
         self.args = SimpleNamespace(project=self.project)
         self.lock = Path(sim.state_dir(self.project)) / 'lock'
         # Hard stop: none of these tests may execute real shell commands.
@@ -632,6 +637,108 @@ class SkillFiles(unittest.TestCase):
             d = re.search(r'^description: (".*")\s*$', fm, re.M)
             self.assertTrue(d, f.parent.name)
             self.assertLessEqual(len(json.loads(d.group(1))), 260, f.parent.name)
+
+    def test_start_here_picks_the_most_serious_once_per_rule(self):
+        f = lambda i, sev, t='x': {'id': i, 'severity': sev, 'title': t, 'evidence': 'e', 'also': [], 'also_detail': []}
+        merged = [f('LT-40', 'USER BUG'), f('LT-40', 'USER BUG'), f('SR-26', 'REJECTION RISK'), f('SR-61', 'REJECTION RISK'),
+                  f('TH-11', 'SUGGESTION'), f('PE-10', 'INFO')]
+        first = runner.start_here(merged)
+        self.assertEqual([x['id'] for x in first], ['SR-61', 'SR-26', 'LT-40'])
+        self.assertEqual(first[2]['count'], 2)
+        many = [f(f'XX-{i}', 'USER BUG') for i in range(9)]
+        self.assertEqual(len(runner.start_here(many)), runner.START_HERE_LIMIT)
+
+    def test_report_caps_noise_but_keeps_every_serious_finding(self):
+        f = lambda i, sev, t: {'id': i, 'severity': sev, 'title': t, 'evidence': 'e', 'also': [], 'also_detail': []}
+        merged = [f('LT-40', 'USER BUG', f'bug{i}') for i in range(8)] + [f('LT-20', 'SUGGESTION', f's{i}') for i in range(8)] + \
+                 [f('PE-10', 'INFO', f'n{i}') for i in range(8)]
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            runner.print_findings(merged)
+        text = out.getvalue()
+        self.assertEqual(text.count('[LT-40]'), 8)
+        self.assertEqual(text.count('`e`'), 13)
+        self.assertIn('3 more like this', text)
+        self.assertIn('(+6 more)', text)
+        self.assertEqual(text.count('[PE-10]'), 1)
+
+    def _proof(self):
+        return load('proof_runner', 'apptest/shared/proof/flutter/run.py')
+
+    def _events(self, *events):
+        return subprocess.CompletedProcess([], 1, "\n".join(json.dumps(e) for e in events), "")
+
+    def test_flutter_proof_keeps_same_named_tests_apart(self):
+        # Codex 2026-11-05 F01c: a planned defect that passed must not be hidden by a same-named one that failed.
+        proof = self._proof()
+        out = self._events({'type': 'suite', 'suite': {'id': 10, 'path': 'test/a_bug_test.dart'}},
+                           {'type': 'suite', 'suite': {'id': 11, 'path': 'test/b_bug_test.dart'}},
+                           {'type': 'testStart', 'test': {'id': 1, 'suiteID': 10, 'name': 'BUG every button'}},
+                           {'type': 'testDone', 'testID': 1, 'result': 'success'},
+                           {'type': 'testStart', 'test': {'id': 2, 'suiteID': 11, 'name': 'BUG every button'}},
+                           {'type': 'testDone', 'testID': 2, 'result': 'failure'}, {'type': 'done'})
+        with patch.object(subprocess, 'run', return_value=out):
+            results, p = proof.flutter_test('.')
+        problems = []
+        proof.check(results, problems)
+        self.assertTrue(any('a_bug_test.dart' in x for x in problems), problems)
+        self.assertTrue(p.finished)
+
+    def test_flutter_proof_does_not_count_skipped_or_unfinished_runs(self):
+        proof = self._proof()
+        out = self._events({'type': 'suite', 'suite': {'id': 1, 'path': 'test/x_test.dart'}},
+                           {'type': 'testStart', 'test': {'id': 5, 'suiteID': 1, 'name': 'required'}},
+                           {'type': 'testDone', 'testID': 5, 'result': 'success', 'skipped': True})
+        with patch.object(subprocess, 'run', return_value=out):
+            results, p = proof.flutter_test('.')
+        problems = []
+        proof.check(results, problems, ['test/x_test.dart', 'test/never_ran_test.dart'])
+        proof.finished(p, problems, 'run')
+        joined = ' | '.join(problems)
+        for expected in ('SKIPPED', 'never_ran_test.dart', 'did not reach its end'):
+            self.assertIn(expected, joined)
+
+    def test_overlapping_cleanup_keeps_the_next_sessions_record(self):
+        # Codex 2026-11-05 F02: a second cleanup finishes and a new session starts while the first awaits a delete.
+        with tempfile.TemporaryDirectory() as tmp, patch.object(sim, 'CACHE', tmp), \
+                patch.object(sim, 'simulator_name', return_value='apptest-fixture'):
+            project = os.path.join(tmp, 'p'); os.makedirs(project)
+            sim.take_lock(project); sim._note_udid(project, 'OLD'); sim.save_state(project, {'udid': 'OLD', 'changes': []})
+            args = SimpleNamespace(project=project, udid='OLD', force=False)
+            pending = {'first': True}
+
+            def command(*a):
+                if 'delete' in a and pending['first']:
+                    pending['first'] = False
+                    self.assertEqual(sim.cleanup(args), 0)
+                    sim.take_lock(project); sim._note_udid(project, 'NEW'); sim.save_state(project, {'udid': 'NEW', 'changes': []})
+                return 0, ''
+            with patch.object(sim, 'sh_rc', side_effect=command), contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                sim.cleanup(args)
+            self.assertEqual(sim.load_state(project).get('udid'), 'NEW')
+
+    def test_member_reports_of_the_wrong_shape_are_errors_not_crashes(self):
+        bad = [{'findings': [{'id': 'SR-1', 'severity': [], 'title': 'x'}]},
+               {'findings': [], 'truncated': [{}]},
+               {'findings': [{'id': 'SR-1', 'severity': 'INFO'}]},
+               {'findings': [], 'skipped': [None]},
+               {'findings': [], 'suppressed': {'SR-1': []}}]
+        for data in bad:
+            self.assertIsNotNone(runner.invalid_report(data), data)
+        self.assertIsNone(runner.invalid_report({'findings': [{'id': 'SR-1', 'severity': 'INFO', 'title': 'x'}], 'truncated': ['a']}))
+
+    def test_next_steps_point_at_real_commands_without_repeats(self):
+        first = [{'id': 'SR-30'}, {'id': 'SR-31'}, {'id': 'NW-10'}, {'id': 'XX-1'}]
+        self.assertEqual(runner.next_steps(first),
+                         [{'command': 'c ready', 'rules': ['SR-30', 'SR-31']}, {'command': 'c account', 'rules': ['NW-10']}])
+        table = (Path(__file__).resolve().parents[2] / 'app' / 'SKILL.md').read_text(encoding='utf-8')
+        for command in runner.NEXT_COMMAND.values():
+            self.assertRegex(table, rf'\| {command} \|', command)
+
+    def test_every_member_points_at_the_conversation_rules(self):
+        skills = Path(__file__).resolve().parents[2]
+        for f in skills.glob('apptest-*/SKILL.md'):
+            self.assertIn('§11', f.read_text(encoding='utf-8'), f.parent.name)
 
     def test_no_skill_assumes_where_it_is_installed(self):
         # A plugin install lives elsewhere, so a fixed path would break every command.

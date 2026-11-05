@@ -515,7 +515,12 @@ def main(argv=None):
             print(f"--out is inside a git repo ({repo}): diff images bloat the repo (VI-P1). "
                   f"Give a folder outside the project or use --allow-in-repo.", file=sys.stderr)
             return 2
+        if os.path.isdir(a.out) and os.listdir(a.out) and not os.path.exists(os.path.join(a.out, ".vi-diff")):
+            print(f"--out ({a.out}) already holds other files: give an empty folder. Diff images could overwrite them.",
+                  file=sys.stderr)
+            return 2
         os.makedirs(a.out, exist_ok=True)
+        open(os.path.join(a.out, ".vi-diff"), "w").close()
     try:
         masks = [tuple(int(v) for v in m.split(",")) for m in a.mask]
         if any(len(m) != 4 for m in masks):

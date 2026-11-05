@@ -12,9 +12,10 @@ metadata:
 
 # apptest-test-health: the health of the tests
 
-Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.3 (principles 11, 14, 15) ·
+Depends on: `../apptest/shared/CONVENTIONS.md` ≥ 1.10 (principles 11, 14, 15) ·
 group principles `../apptest/shared/test-methods.md` (T5, T6, T9) · report
 `../apptest/shared/report.md`.
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 **Default contract:** Gives a report. Does NOT delete, disable or loosen tests
 (TH-P1, T9); a suggested fix is applied only with the user's approval.
@@ -77,7 +78,7 @@ python3 -I "${CLAUDE_SKILL_DIR}/../apptest-test-health/scripts/health_scan.py" <
 
 | Id | Topic | Severity |
 |---|---|---|
-| TH-10 | Element id an end-to-end test looks for is not in the app | USER BUG |
+| TH-10 | Element id an end-to-end test looks for is not in the app | SUGGESTION |
 | TH-11 | Skipped / disabled test | SUGGESTION |
 | TH-12 | "only / fit": other tests are silently skipped (Dart / JS) | USER BUG |
 | TH-13 | Fixed-time wait | SUGGESTION |

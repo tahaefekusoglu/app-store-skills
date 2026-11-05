@@ -114,9 +114,23 @@ def main(argv=None):
         dt = re.search(DELETE_TEXT, texts)
         if flags["account"]:
             if not (cc or ct):
-                rep.add("NW-10", "INFO", "Accounts exist but no sign of account CREATION in the app (sign-in with existing accounts only)",
-                        "—", "If accounts are created elsewhere (web, admin, another service), read the scope of the 5.1.1(v) deletion "
-                             "requirement from Apple's current text; if they are created in the app, deletion must be in the app too.")
+                # Signing in with Apple, Google or a hosted auth service creates the account on first use, with no
+                # "sign up" wording anywhere. Real fixes citing 5.1.1(v) showed this is the common case.
+                # Google or Facebook sign-in alone is left out: it can be only for reaching a user's Drive or photos.
+                hosted = any(k == "capability:Sign in with Apple" or k in ("capability:sign-in:with Apple", "capability:sign-in:Firebase Auth",
+                                                                           "capability:sign-in:Supabase/Auth0/Clerk/Amplify") for k in p.items)
+                if dc or dt:
+                    rep.add("NW-10", "INFO", "Account deletion flow exists",
+                            f"{p.rel(dfirst[0])}:{dfirst[1]}" if dfirst else f"text: {dt.group(0)!r}",
+                            "Is it easy to find in Settings, does it really delete (not just sign out): verify by hand.")
+                elif hosted:
+                    rep.add("NW-10", "REJECTION RISK", "Sign-in creates accounts, but no account deletion found", "code + dependencies",
+                            "5.1.1(v): an app that creates accounts, also through third-party sign-in, must let the user start "
+                            "deletion from INSIDE the app. If deletion goes to a web page, it must go directly to that page.")
+                else:
+                    rep.add("NW-10", "SUGGESTION", "Accounts exist, no account deletion and no sign of account creation", "—",
+                            "If accounts are only created elsewhere (a self-hosted server, an admin), read the scope of 5.1.1(v) "
+                            "in Apple's current text. If the app can create them, deletion must be inside the app.")
             elif not (dc or dt):
                 # The word "Register" alone is no proof: it may be device / server registration (e.g. Home Assistant).
                 rep.add("NW-10", "REJECTION RISK" if cc else "SUGGESTION", "Accounts can be created in the app but no account deletion was found",
@@ -152,6 +166,8 @@ def main(argv=None):
         seen = set()
         for f, n, line, m in scan.grep(p, HTTP_URL, files=files):
             host = m.group(1).lower()
+            if host.endswith(".") or re.search(r"hasPrefix|startsWith|replacingOccurrences|\.replace\(|BEGINSWITH", line):
+                continue  # code that recognizes or rewrites an address, not a connection
             if HTTP_OK_HOST.match(host) or DEV_SCREEN.search(p.rel(f)) or FIXTURE_DIR.search("/" + p.rel(f)) \
                     or host in seen or re.search(r"(?i)xmlns|namespace|\.dtd\b|dtds/|schema", line) \
                     or NS_HOST.match(host):

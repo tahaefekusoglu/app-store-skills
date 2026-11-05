@@ -1,0 +1,804 @@
+[
+ {
+  "rule": "SR-30",
+  "repo": "xchrisbailey/kyo",
+  "fix": "5f0976c728bfbb7e0f9b708ca126f2d9d5f8b971",
+  "before": "49647dd6adcfad5e2e9bca6d1ef424332e2379d1",
+  "files": [
+   "Kyo/PrivacyInfo.xcprivacy",
+   "KyoWatch/PrivacyInfo.xcprivacy",
+   "KyoWatchWidgets/PrivacyInfo.xcprivacy",
+   "KyoWidgets/PrivacyInfo.xcprivacy"
+  ],
+  "title": "chore: add privacy manifests and privacy policy page (#271)",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "SR-30",
+  "repo": "Anurag-Chourasia/MotivationDaily",
+  "fix": "1c6e17f065998a37b3bfc4b99e673034a71ca6ca",
+  "before": "da73b795267dadeea883271630ac9d043d6fe631",
+  "files": [
+   "MotivationDaily/App/DeveloperSettingsView.swift",
+   "MotivationDaily/PrivacyInfo.xcprivacy",
+   "MotivationDailyTests/PrivacyManifestTests.swift"
+  ],
+  "title": "feat(privacy): add privacy manifest, documentation, and compliance tests (#10)",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "SR-30",
+  "repo": "yishengjiang99/earsheet",
+  "fix": "63a177d9517533f919029cdd555c773e2f153044",
+  "before": "b7a18bc8e91387156da172a08f87b2ce452c204f",
+  "files": [
+   "Sources/App/PrivacyInfo.xcprivacy",
+   "Tests/EarSheetTests/PrivacyManifestTests.swift"
+  ],
+  "title": "[P10.4] Add PrivacyInfo.xcprivacy (Linked, no tracking) + align privacy docs (#47)",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "SR-30",
+  "repo": "raosam0454/rescue-ready",
+  "fix": "eaf190cf0bfedbc446a97ab23698f002c02d3d4d",
+  "before": "1051231189444dcae782d19f144d07753bebfd59",
+  "files": [
+   "rescue-ready/Resources/PrivacyInfo.xcprivacy"
+  ],
+  "title": "chore: add privacy manifest",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "SR-30",
+  "repo": "ErgunUral/Togdas",
+  "fix": "5c9e9f5331e50f74fff444f2fcdef41a6a5a08b8",
+  "before": "ccab99f23aef11e2b48d9fd01687c25697216144",
+  "files": [
+   "App/PrivacyInfo.xcprivacy",
+   "Watch/PrivacyInfo.xcprivacy",
+   "Widget/PrivacyInfo.xcprivacy"
+  ],
+  "title": "chore: add privacy manifests",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "SR-30",
+  "repo": "Lion-Wu/Mallow",
+  "fix": "d947fce91235362bb993082bddc17c226e9b9eb2",
+  "before": "6faadd6413bd93d09a9950ac86a5476e03493a7a",
+  "files": [
+   "Mallow/Resources/PrivacyInfo.xcprivacy"
+  ],
+  "title": "Add privacy manifest for app container file timestamp access",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "SR-30",
+  "repo": "pollini/MVPInstallIdentityKit",
+  "fix": "ce8ed73e3f01a2bf8e550b6f7500d46376c54b99",
+  "before": "dbcb11d2f8e3f67c23761f1c49961db25c8f69a3",
+  "files": [
+   "Package.swift",
+   "Sources/MVPInstallIdentityKit/PrivacyInfo.xcprivacy",
+   "Tests/MVPInstallIdentityKitTests/InMemoryKeychainStore.swift"
+  ],
+  "title": "Add privacy manifest and correct test-environment notes",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "SR-30",
+  "repo": "Anurag-Chourasia/ShowBook",
+  "fix": "6e97099e1ff8305ed2dce27d5d85403856d1c1c1",
+  "before": "f5c18b7f4f9f36e4023d86f4019e0a2cce82b382",
+  "files": [
+   "ShowBook/DataBase/Persistence/Persistence.swift",
+   "ShowBook/Developer/DeveloperSettingsView.swift",
+   "ShowBook/PrivacyInfo.xcprivacy",
+   "ShowBook/View/Dashboard View/DashboardView.swift",
+   "ShowBookTests/PrivacyManifestTests.swift"
+  ],
+  "title": "feat(privacy): add privacy manifest, documentation, and compliance tests (#25)",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "SR-30",
+  "repo": "harrypakhale98/Splt",
+  "fix": "371f106b3b6360c6fe2448989dfe99fadaf0ac74",
+  "before": "e90fce568211141b2cc261d1444ba92eb960561a",
+  "files": [
+   "Splt/Resources/PrivacyInfo.xcprivacy"
+  ],
+  "title": "Add privacy manifest and privacy policy",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "SR-30",
+  "repo": "sunadi02/IOSapp",
+  "fix": "9b7e02d717b5f5a3b3f26bc7975a1077c8e65c3e",
+  "before": "25b97b3cddb4f90154e0f51ac19cbe566ccbfac1",
+  "files": [
+   "ScamShield/PrivacyInfo.xcprivacy",
+   "ScamShield/Views/Dashboard/DashboardView.swift",
+   "ScamShield/Views/History/HistoryView.swift"
+  ],
+  "title": "Add privacy manifest and retry buttons for failed loads",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "SR-30",
+  "repo": "cakirizm/saha-disi",
+  "fix": "973163f961bab7be46ff7fbf6d5d5677a3bfb883",
+  "before": "7dbb88a87fa0edbb7e35e32353e2587d74e0a00b",
+  "files": [
+   "ios/SahaDisi/SahaDisi/PrivacyInfo.xcprivacy",
+   "ios/SahaDisi/SahaDisi/Views/RootView.swift"
+  ],
+  "title": "feat(ios): add privacy manifest and link privacy and terms documents",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "SR-30",
+  "repo": "DonovanMontoya/OperaLibre",
+  "fix": "07dda984bd12c055ff5d5d0a33c1e60e9c7739c3",
+  "before": "ef628956d4c08d9a282a9b3da842eac57447c326",
+  "files": [
+   "apps/web/ios/App/App/Info.plist",
+   "apps/web/ios/App/App/PrivacyInfo.xcprivacy"
+  ],
+  "title": "chore(ios): add privacy manifest and require arm64 (#384)",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "PP-10",
+  "repo": "AIME-LOIC/book_it",
+  "fix": "f8f4cc637ca54849369fbfe78576d6864714e736",
+  "before": "10e06c6c6664525458003998db19d5e5715931c4",
+  "files": [
+   "bookit/ios/Runner/Info.plist"
+  ],
+  "title": "Add camera usage description for QR ticket scanning",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "PP-10",
+  "repo": "orangeboyChen/sim-deck",
+  "fix": "c9726220f1450e630c82e794d8c1018dbbc74afd",
+  "before": "ffbee522913fd90c3716e0cba8bb3dfdb1d02b85",
+  "files": [
+   "ios/SimDeck/Info.plist"
+  ],
+  "title": "fix(ios): add camera usage description",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "PP-10",
+  "repo": "ArthurKunz/areuout",
+  "fix": "ddbd498a64232497250a5f827e1c9fb500606c8e",
+  "before": "8cce593f29c40da3886d62d2c35812b87b430955",
+  "files": [
+   "ios/App/App/Info.plist"
+  ],
+  "title": "fix(ios): add camera usage description",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "PP-10",
+  "repo": "keyursavalia/GatorPlate",
+  "fix": "4f819610bece909ff5be22b7e71f9be37a17ce6c",
+  "before": "86a9523f4f348e2f768bbc99b7a7251f93e8fd40",
+  "files": [
+   "GatorPlate/Info.plist"
+  ],
+  "title": "update: Info.plist adds camera usage description",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "PP-10",
+  "repo": "aremumahmud/2fanurse",
+  "fix": "c2ae44f933683e8cfa2060542071bacbba2a7db0",
+  "before": "bbcd28843adbeb54f53e3dce15381921e10b79d3",
+  "files": [
+   "macos/Runner/Info.plist"
+  ],
+  "title": "Fix macOS crash: add camera usage description + camera/network entitlements",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "PP-10",
+  "repo": "openvtsofficial/openvts-application",
+  "fix": "46be48494ff07c519c7047a63942ba6a5bbbd733",
+  "before": "a69d6ed0530b4d57ceefefad97c8a3181103b5d3",
+  "files": [
+   "ios/Flutter/AppFrameworkInfo.plist",
+   "ios/Runner/Info.plist"
+  ],
+  "title": "fix: update iOS project settings and add camera usage description",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "PP-10",
+  "repo": "Obliviousrat28/Pantry_App",
+  "fix": "eec28f805eaee6851a8c628dc486fd609b5788f8",
+  "before": "b3379df5ea2ff9fa10c80104afa504a5ebb19c94",
+  "files": [
+   "ios/Runner/Info.plist"
+  ],
+  "title": "Add camera usage description for barcode scanner",
+  "before_hits": 2,
+  "after_hits": 1,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "PP-10",
+  "repo": "Romario666/plugoal-mobile",
+  "fix": "e30c9ad21159a77d050fd91d15bed0f7d03a9734",
+  "before": "2f08062f0e73571c54fd717addf82a6a07d40a13",
+  "files": [
+   "ios/App/App/Info.plist"
+  ],
+  "title": "Add camera usage description for QR scanning",
+  "before_hits": 1,
+  "after_hits": 1,
+  "result": "caught",
+  "cleared": false
+ },
+ {
+  "rule": "PP-10",
+  "repo": "MohammedAshraf772/Nike_sneaker_store",
+  "fix": "093d9eed1aec87e3e2d66252b75e83e0d7099089",
+  "before": "dd5738b525759224ed64c5d14905e5586e5380aa",
+  "files": [
+   "ios/Runner/Info.plist"
+  ],
+  "title": "Add camera usage description for iOS",
+  "before_hits": 2,
+  "after_hits": 1,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "PP-10",
+  "repo": "matiasrmb/estacionamiento_central_mobile",
+  "fix": "8fc9926202768ff95d5c8ec2a2906a8f3f0e56f6",
+  "before": "f379ea8b04e3b16285581844ea0e9c6aed5e17e2",
+  "files": [
+   "ios/Runner/Info.plist"
+  ],
+  "title": "fix(ios): add camera usage description",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "PP-10",
+  "repo": "doudar/SS2kConfigApp",
+  "fix": "7d8510cea8da55151a1477b26c7ca2a39da6fd41",
+  "before": "e0f039426cb85fb0af7d9e9ede8a812b0b916a28",
+  "files": [
+   "ios/Runner/Info.plist"
+  ],
+  "title": "Add camera usage description to Info.plist for workout media capture",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "PP-10",
+  "repo": "ACM-VIT/ExamCooker",
+  "fix": "c372103ac945d2f1ab108fa6a0e76a331e2afce8",
+  "before": "11e5ac1a4ed55930f2021f667e73882ba480a4e7",
+  "files": [
+   "mobile/ios/App/App/Info.plist"
+  ],
+  "title": "fix(ios): add camera usage description",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "NW-10",
+  "repo": "kebabahub/kebaba-data-hub",
+  "fix": "36fc3c915ff7da9c351798291f169476f473b874",
+  "before": "d2b9e97cf2b7dab27d42d6c8fa7ca80b8a32faa7",
+  "files": [
+   "lib/core/api_client.dart",
+   "lib/screens/profile_screen.dart"
+  ],
+  "title": "Add account deletion (App Store review requirement) and CI/CD config",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "NW-10",
+  "repo": "tchendoh/tvQ",
+  "fix": "5d3c3343d8b02c7ca20f93a950ae044c48bca499",
+  "before": "6ce47db8489e1f946cf84b52e158e0c041a2b598",
+  "files": [
+   "tvQ/Services/Firebase/AuthService.swift",
+   "tvQ/Services/Firebase/UserShowsService.swift",
+   "tvQ/ViewModels/AuthViewModel.swift",
+   "tvQ/Views/DeleteAccountView.swift",
+   "tvQ/Views/SettingsView.swift"
+  ],
+  "title": "Add account deletion (App Store requirement)",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "NW-10",
+  "repo": "unfound-2/PausePath",
+  "fix": "d8163a397ccfce2ef81eb5f28596ff006c12adad",
+  "before": "8d8c8d3f37f7fc447997afe6405900b00e71a5b3",
+  "files": [
+   "PausePath/App/ConnectedViews.swift",
+   "PausePath/Services/PausePathAPI.swift"
+  ],
+  "title": "Add account deletion (App Store Review Guideline 5.1.1(v))",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "NW-10",
+  "repo": "MultiplexerLab/mathmunch",
+  "fix": "d36af1c7ef5e2b96696bd0aaa8e2618bdd526d5e",
+  "before": "66f4e34bb86adc2b11a37c62b1d04d8e59a4fa72",
+  "files": [
+   "lib/data/repositories/auth_repository.dart",
+   "lib/data/repositories/child_repository.dart",
+   "lib/features/settings/settings_screen.dart"
+  ],
+  "title": "Add account deletion (App Store Guideline 5.1.1v) and fix duplicate child bug",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "NW-10",
+  "repo": "Monalterego/kelime-oyunu",
+  "fix": "9c058f41bf8b139f76c6e033e532fab0168e57e4",
+  "before": "8b476ba49b468104a1e43830a5621c73008e8104",
+  "files": [
+   "src/screens/ProfileScreen.tsx"
+  ],
+  "title": "feat: add account deletion (App Store requirement)",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "NW-10",
+  "repo": "cw0rley/prforgd",
+  "fix": "716c64276f38458c4b519eb393dd2806086b7d81",
+  "before": "a11d663251f7e33523d3097ae736a465475035ca",
+  "files": [
+   "app/(tabs)/profile.tsx",
+   "app/privacy.tsx"
+  ],
+  "title": "Add account deletion (App Store Guideline 5.1.1(v))",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "NW-10",
+  "repo": "octamagic/binthere",
+  "fix": "78d5755ece0ca4589eaa66ae453c396aff832b85",
+  "before": "0f6c8963d11aaad1a975ae3a6b28e4222692df84",
+  "files": [
+   "binthere/Services/AuthService.swift",
+   "binthere/Views/Settings/SettingsView.swift"
+  ],
+  "title": "feat: add account deletion (App Store requirement)",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "NW-10",
+  "repo": "Blakeyyyyyyy/groove-ai",
+  "fix": "5496a750bb632d08673089b960d77d8092df877c",
+  "before": "533911f35d27f2fa47750f2abdfb725f69499ca9",
+  "files": [
+   "GrooveAI/Models/AppState.swift",
+   "GrooveAI/Services/SupabaseService.swift",
+   "GrooveAI/Views/Settings/SettingsView.swift"
+  ],
+  "title": "Add account deletion — App Store guideline 5.1.1 compliance",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "NW-10",
+  "repo": "dasecure/iotpush-app",
+  "fix": "ebae2d3ea06e653ae98ede12ea5d3072934cd085",
+  "before": "5ee267c221cff97b8318641e7df3c525cb7854d9",
+  "files": [
+   "src/screens/SettingsScreen.tsx"
+  ],
+  "title": "feat: Add account deletion (App Store requirement)",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "NW-10",
+  "repo": "patricio1564/Anchored",
+  "fix": "8005b0f1c30dd092581cc8048d6a429bd77a0ae3",
+  "before": "20fff33d70a0728206e3d040d8a79761e118c3f4",
+  "files": [
+   "Anchored/Features/Profile/ProfileView.swift",
+   "Anchored/Services/AuthManager.swift"
+  ],
+  "title": "feat: add account deletion (App Store guideline 5.1.1(v)) (#2)",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "NW-10",
+  "repo": "wastwagon/myxcrow",
+  "fix": "2c65e83ad56ce580e950706468f43b723478fb56",
+  "before": "f8f667547ee15a6e4f4f5c2d7238a46f7a30203d",
+  "files": [
+   "apps/web/pages/profile.tsx"
+  ],
+  "title": "Add account deletion (App Store policy)",
+  "result": "not applicable"
+ },
+ {
+  "rule": "NW-10",
+  "repo": "cormacbrannigan03/GaelGrounds-1-",
+  "fix": "f4e35377a48975d68556da49573af3ab92e64595",
+  "before": "895b3aac430c9bff51ccb36de7dc056bf9b70cc0",
+  "files": [
+   "ios/GaelGrounds/Services/AccountService.swift",
+   "ios/GaelGrounds/Views/Profile/ProfileView.swift"
+  ],
+  "title": "Add account deletion (App Store Guideline 5.1.1(v))",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "IA-11",
+  "repo": "sarisman84/web-shop",
+  "fix": "0b33f298d58761b51a99b45da2befb2cc2a5f58d",
+  "before": "e540f9c15409f62ea24721393bc99c9fa26beee0",
+  "files": [
+   "app/page.tsx",
+   "components/DeleteConfirmationDialog.tsx",
+   "components/DeleteProductButton.tsx"
+  ],
+  "title": "Feature - Add delete confirmation dialog (#39)",
+  "result": "not applicable"
+ },
+ {
+  "rule": "IA-11",
+  "repo": "AiEmreer/smart_finance_tracker",
+  "fix": "503cc3cefc12f23b872767f01d44e54d8f85b093",
+  "before": "2f4b0884ac5cf6a9bb0b5738887dbe7634bf8835",
+  "files": [
+   "lib/main.dart"
+  ],
+  "title": "Add delete confirmation dialogs",
+  "before_hits": 1,
+  "after_hits": 1,
+  "result": "caught",
+  "cleared": false
+ },
+ {
+  "rule": "IA-11",
+  "repo": "marius-27/countdown-mobile-app",
+  "fix": "069c056d455ec21134f84105da517458e9ada238",
+  "before": "74f6711ba7aa34b05d5dc44b3305263d94774ba1",
+  "files": [
+   "lib/screens/countdown/countdown_screen.dart"
+  ],
+  "title": "feat: add delete confirmation dialog",
+  "before_hits": 0,
+  "after_hits": 1,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "IA-11",
+  "repo": "Bima565/proyek_motomanager_3",
+  "fix": "1f968367954b4bf5e8c85af868e901214a3c1812",
+  "before": "8b55c01e25d626bded16072875a18147b7b695bf",
+  "files": [
+   "lib/page/stok/data_sparepart.dart",
+   "lib/page/stok/master_jasa.dart"
+  ],
+  "title": "feat: Add delete confirmation dialog for spare parts and services; improve search function",
+  "before_hits": 2,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "IA-11",
+  "repo": "TaiLee75/PRM393-Fashion-Store-App",
+  "fix": "d2b34e07c324e2b46e143a6a627699a7cd9ba0b6",
+  "before": "c154ca0e336e8c80f386e6a349cb79cb0c258543",
+  "files": [
+   "lib/screens/cart/cart_screen.dart",
+   "lib/screens/cart/checkout_screen.dart"
+  ],
+  "title": "perf(cart): add delete confirmation dialog, active voucher badge, and checkout edge-case g",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "IA-11",
+  "repo": "Mzarmehi1390/DarsYar",
+  "fix": "7b7a637b46b5cd92dd74195909f05501ac0d2a89",
+  "before": "e6b19e86e668b49cb29478f791c3a0acb0a24791",
+  "files": [
+   "lib/main.dart"
+  ],
+  "title": "feat: confirm before deleting study items",
+  "before_hits": 1,
+  "after_hits": 1,
+  "result": "caught",
+  "cleared": false
+ },
+ {
+  "rule": "MO-13",
+  "repo": "flirtual/flirtual",
+  "fix": "35a91a5f111812e6aa029ddc23774f2626494980",
+  "before": "0f9fd8b8cf95ab8cff9778d4b9ec566d79d02e15",
+  "files": [
+   "apps/frontend/src/app/[locale]/(app)/(authenticated)/subscription/form.tsx",
+   "apps/frontend/src/app/[locale]/(app)/(authenticated)/subscription/subscription-buttons.tsx",
+   "apps/frontend/src/hooks/use-purchase.tsx"
+  ],
+  "title": "add restore purchases button",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "MO-13",
+  "repo": "novernmanagement-coder/SafePrep-Alcohol",
+  "fix": "1887cd12bd1c57c4a93ae3d5ef0defa19eb4d437",
+  "before": "992f3ff3073ef17ff2b7719a8bf5153f6ebad38c",
+  "files": [
+   "lib/iap_service.dart",
+   "lib/onboard/onboard_paywall.dart"
+  ],
+  "title": "Add Restore Purchases button for Guideline 3.1.1, bump to 1.2.0+4",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "MO-13",
+  "repo": "7Auri/arium-privacy",
+  "fix": "1d7a18e3feacaa9bc6dcda654c63c5e66de0b595",
+  "before": "9463450da278764689d841c6cc9d485ad2934284",
+  "files": [
+   "Arium/Views/AddHabitView.swift",
+   "Arium/Views/Components/AlertsModifier.swift",
+   "Arium/Views/Garden/GardenView.swift",
+   "Arium/Views/HabitTemplatesView.swift",
+   "Arium/Views/Home/HomeView.swift",
+   "Arium/Views/ImprovedTemplatesView.swift"
+  ],
+  "title": "fix: add Restore Purchases button to ALL premium alerts",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "MO-13",
+  "repo": "CompanioNation/ios-app",
+  "fix": "654cc965bb7daf18471d178d3bd84b9455d7eaf1",
+  "before": "43dc520d004e6ec2f1efb1fc562abe8f063c6f51",
+  "files": [
+   "pwa-shell/IAP.swift",
+   "pwa-shell/ViewController.swift"
+  ],
+  "title": "added restore purchases button",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "MO-13",
+  "repo": "vibrito/footballWhitLabel",
+  "fix": "b1f4a3646bbea71a12087c0a02b430115e3b7cb1",
+  "before": "4cec65b892d50bcd0fbb0cc39d1caf1dab06cb4e",
+  "files": [
+   "BR2026/Views/More/TeamThemePickerView.swift"
+  ],
+  "title": "Show lock icon/price for unpurchased teams and add Restore Purchases button",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "MO-13",
+  "repo": "shlee122000/k-tour-guide",
+  "fix": "43938f2375993867ac08b6e0cd229669ce1cc7be",
+  "before": "137abe0167cd4e34ba51db3820ab0c2de556db21",
+  "files": [
+   "src/app/[locale]/pricing/page.tsx"
+  ],
+  "title": "fix: add restore purchases button for Apple guideline 3.1.1",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "MO-13",
+  "repo": "sbmp69/fitforge",
+  "fix": "342f7240dcfd53f89585e3ef3a688a3986403fa4",
+  "before": "4e8eee5326b022e5083a1da384903e34fe81b7f9",
+  "files": [
+   "mobile/lib/screens/paywall/paywall_screen.dart",
+   "mobile/lib/screens/profile/profile_screen.dart",
+   "mobile/lib/services/ad_service.dart",
+   "mobile/lib/services/subscription_service.dart"
+  ],
+  "title": "feat: setup revenuecat integration, fix paywall UI, block ads on premium screens, add rest",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ },
+ {
+  "rule": "MO-13",
+  "repo": "jelhadouti-sketch/hullbook",
+  "fix": "b680029be0a615e0643e0b3eb70bdd2c09db96b8",
+  "before": "6885c479d2ad9ef5783160fbc0c16d06707af774",
+  "files": [
+   "components/billing/BillingCheckout.tsx"
+  ],
+  "title": "Add Restore Purchases button and subscription legal links to paywall",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "MO-13",
+  "repo": "ridgeview-apps/tube-service",
+  "fix": "be8b6d183d3f6b2c0f461720a307fc59e7da6e57",
+  "before": "8323e052c97fb091915b3f4038414cdf9c3a80ec",
+  "files": [
+   "Packages/PresentationViews/Sources/PresentationViews/Settings/SettingsView.swift",
+   "TubeService/Views/IAP/ManageSubscriptionsModifier.swift",
+   "TubeService/Views/IAP/TubeServicePlusView.swift",
+   "TubeService/Views/Settings/SettingsScreen.swift"
+  ],
+  "title": "Add restore purchases button, manage subscription row, and extract StoreKit modifier",
+  "before_hits": 1,
+  "after_hits": 1,
+  "result": "caught",
+  "cleared": false
+ },
+ {
+  "rule": "MO-13",
+  "repo": "JarrydWilliam/TriPlace",
+  "fix": "a83cab199703cca938de7397e8b5474937eacabf",
+  "before": "31ad08e82999a59957e33d6aed162fd6c13b35fa",
+  "files": [
+   "client/src/components/paywall-modal.tsx"
+  ],
+  "title": "fix(compliance): add Restore Purchases button and legal links to PaywallModal for Apple Gu",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "MO-13",
+  "repo": "JPaulus04/God_Prodigy_App",
+  "fix": "e06e4fac8a38818e7cfd6bc177f5e1291d0051b5",
+  "before": "1b17782921a5555427e7e4ddcf58859fd432efcb",
+  "files": [
+   "src/ui/SettingsPanel.jsx"
+  ],
+  "title": "feat: add Restore Purchases button to SettingsPanel",
+  "before_hits": 0,
+  "after_hits": 0,
+  "result": "missed",
+  "cleared": false
+ },
+ {
+  "rule": "MO-13",
+  "repo": "ryanlecours/loam-logger-mobile",
+  "fix": "b7744d95955bf965ceaff9073525f27efe4101ab",
+  "before": "35e97a8b8adad9bcb0937cf308ffc880dd7b23f7",
+  "files": [
+   "src/components/settings/SubscriptionSection.tsx"
+  ],
+  "title": "feat: add restore purchases button",
+  "before_hits": 1,
+  "after_hits": 0,
+  "result": "caught",
+  "cleared": true
+ }
+]

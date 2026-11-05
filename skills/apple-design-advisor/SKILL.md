@@ -19,6 +19,7 @@ Depends on: sibling `../apple-design-audit/SKILL.md` (the HIG reading tool lives
 
 **Default contract:** Makes suggestions, writes no code. If the user says "apply", it writes following the project's own
 language and rules (CLAUDE.md, theme files, Git flow).
+Talking with the user: `../apptest/shared/CONVENTIONS.md` §11 (when to ask, status lines, one next step).
 
 ## When to use
 
