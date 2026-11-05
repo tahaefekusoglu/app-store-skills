@@ -200,6 +200,7 @@ class Safety(unittest.TestCase):
         self.assertIn("Not applicable", r.stdout + r.stderr)
 
 
+@unittest.skipIf(os.name == "nt", "simulators exist only on macOS; sim_session.py needs POSIX file locks")
 class Simulators(unittest.TestCase):
     """The user's own simulators and the apps on them must never be touched."""
 
