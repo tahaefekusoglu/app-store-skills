@@ -633,6 +633,21 @@ class SkillFiles(unittest.TestCase):
             self.assertTrue(d, f.parent.name)
             self.assertLessEqual(len(json.loads(d.group(1))), 260, f.parent.name)
 
+    def test_no_skill_assumes_where_it_is_installed(self):
+        # A plugin install lives elsewhere, so a fixed path would break every command.
+        skills = Path(__file__).resolve().parents[2]
+        for f in skills.rglob('SKILL.md'):
+            self.assertNotIn('~/.claude/skills', f.read_text(encoding='utf-8'), f.parent.name)
+
+    def test_every_scan_rule_is_documented(self):
+        skills = Path(__file__).resolve().parents[2]
+        for script in skills.glob('*/scripts/*.py'):
+            ids = set(re.findall(r'''["']([A-Z]{2,3}-\d{1,3})["']''', script.read_text(encoding='utf-8')))
+            doc = (script.parents[1] / 'SKILL.md').read_text(encoding='utf-8')
+            for rule in ids:
+                code, num = rule.split('-')
+                self.assertTrue(rule in doc or re.search(rf'{code}-\d+[^|\n]*\b{num}\b', doc), f'{rule} missing from {script.parent.parent.name}')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=1)

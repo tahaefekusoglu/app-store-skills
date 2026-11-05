@@ -32,7 +32,7 @@ status bar included, at the device's real resolution.
 ## Handshake capture (any technology)
 
 ```sh
-sh ~/.claude/skills/apptest-store-assets/scripts/shot_host.sh <UDID> <OUT> &
+sh <skills>/apptest-store-assets/scripts/shot_host.sh <UDID> <OUT> &
 # … the tour runs …
 kill "$(cat <OUT>/host.pid)"
 ```

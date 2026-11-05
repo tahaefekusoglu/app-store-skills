@@ -65,7 +65,7 @@ CONVENTIONS §5. The code scan only reads. If screenshots are needed, a temporar
 ## Reading the HIG (every use)
 
 ```sh
-H=~/.claude/skills/apple-design-audit/scripts/hig.py
+H="${CLAUDE_SKILL_DIR}/../apple-design-audit/scripts/hig.py"
 python3 -I $H read design-principles
 python3 -I $H read designing-for-ios        # per target: designing-for-ipados, -macos, -watchos, -tvos, -visionos
 python3 -I $H find "tab"                    # search topics
@@ -81,7 +81,7 @@ only a short summary goes into the report.
 ## Code scan
 
 ```sh
-python3 -I ~/.claude/skills/apple-design-audit/scripts/hig_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apple-design-audit/scripts/hig_scan.py" <root> [--json]
 ```
 
 | Id | What | Severity | HIG |

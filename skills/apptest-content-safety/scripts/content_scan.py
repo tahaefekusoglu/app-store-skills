@@ -34,7 +34,8 @@ MOD = {
 # Plain "sendMessage(" is left out on purpose: platform channels and watch communication use that name too.
 CHAT = r"\b(Conversation|Chat|DirectMessage|Inbox)\w*(View|Screen|Controller|Page|List)\b|sendChatMessage|" \
        r"ConversationsList|ChatComposer|MessageComposer"
-SOCIAL = r"\b(followers|following|unfollow|followUser|followAccount)\b"
+# "following" is left out: it is an everyday word ("the following items"), which flagged browsers and readers.
+SOCIAL = r"\b(followers|followersCount|unfollow|followUser|followAccount)\b"
 # IN-APP browser only (a link opened in Safari does not count) with a variable address.
 WEBVIEW = r"WKWebView|webview_flutter|flutter_inappwebview|react-native-webview|InAppBrowser|WebView\("
 ARBITRARY_URL = r"(load\(\s*URLRequest\(\s*url\s*:\s*(?!URL\(string:\s*\")|loadRequest\(\s*(URLRequest\(\s*)?Uri\.parse\(\s*(?![\"'])|" \
@@ -51,6 +52,12 @@ MEDICAL = r"(?i)\b(diagnos(e|es|is|ed|ing)|cure[sd]?|medical treatment|treat(s|i
 # Wording that names the audience (not post "children" / reply chains).
 KIDS = r"(?i)\b(for (kids|children|toddlers)|kids'? (app|games?|mode|zone)|child-friendly|toddlers?|preschool(ers)?|" \
        r"çocuklar için|çocuk modu|çocuk dostu|okul öncesi|für kinder)\b"
+# New age rating descriptors (Apple, 2026-11-02; declared from 2026-11-16, all apps by 2027-01-12).
+SHARED_LOCATION = (r"(?i)share (your |my |live |real.?time )?location|location.?sharing|live.?location|shareLocation|"
+                   r"sharedLocation|konum(unu|umu)? paylaş|canlı konum")
+DATING = (r"(?i)(?<![-\w])dating\b|\bmatchmaking\b|find (a |your )?(partner|soulmate)|romantic companion|"
+          r"virtual (girlfriend|boyfriend)|\bflört\b|sevgili bul")
+AGE_API = r"DeclaredAgeRange|AgeRangeService|ageRangeService|requestAgeRange"
 PARENTAL = r"(?i)parental (gate|control)|ebeveyn (kapısı|denetimi)|age (gate|verification|assurance)|DeclaredAgeRange|" \
            r"yaş doğrulama"
 TRACKERS = r"(?i)firebase_analytics|FirebaseAnalytics|Mixpanel|amplitude|appsflyer|adjust|facebook|google_mobile_ads|" \
@@ -145,10 +152,20 @@ def main(argv=None):
         inv.append("Medical or Wellness")
     if re.search(PARENTAL, hay):
         inv.append("In-App Controls (Parental Controls / Age Assurance)")
+    if re.search(SHARED_LOCATION, hay):
+        inv.append("Shared Location (verify: with another person or group?)")
+    if re.search(DATING, src_texts):  # user-facing text only: code and block lists mention the word in passing
+        inv.append("Dating and Relationships (minimum 18+)")
     if inv:
         rep.add("CS-12", "INFO", "Age rating questionnaire items that may be 'yes'", "; ".join(inv),
                 "2.3.6: the questionnaire must be answered honestly; take the current questions from App Store Connect (principle 7). "
                 "This list is a hint from the code; the answer is the user's.")
+
+    # CS-16: social media feed without an age check
+    if social and not re.search(AGE_API, code_text):
+        rep.add("CS-16", "SUGGESTION", "Social media signs, Declared Age Range API not found", "code",
+                "Answering 'yes' on the Social Media question gives a minimum rating of 13+. The 'disabled for users "
+                "under 13' answer requires at least the Declared Age Range API. Not a finding if you accept 13+.")
 
     # CS-13: gambling / real money
     g = re.search(GAMBLING, src_texts)

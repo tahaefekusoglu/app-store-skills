@@ -61,7 +61,7 @@ per combination): time estimate, approval, `caffeinate`, timeout (§6).
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 technology (template choice), `languages`, `purchases`, `has_tests`.
 
 ## Setup (good to know from the start)

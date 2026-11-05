@@ -1,9 +1,21 @@
 # App Store rejection list
 
-Last checked: **2026-10-28** · Apple's rules page "Last Updated: October
-16, 2026". Sources: https://developer.apple.com/app-store/review/guidelines/
-and https://developer.apple.com/distribute/app-review/ ("Avoiding common
-issues").
+Last checked: **2026-11-05** · Apple's rules page "Last Updated: October
+16, 2026". Sources: https://developer.apple.com/app-store/review/guidelines/,
+https://developer.apple.com/distribute/app-review/ ("Avoiding common issues"),
+and https://developer.apple.com/news/upcoming-requirements/ with
+https://developer.apple.com/news/ for requirements with dates, which block an
+upload or submission without being review rules.
+
+**Dated requirements as of the date above** (read the current text; these change):
+
+| Since | Requirement |
+|---|---|
+| 2026-04-28 | Built with Xcode 26 or later, with an SDK for iOS 26 or the matching platform |
+| 2026-09 | Age rating questionnaire: Social Media must be answered to submit an update. "Yes" means a minimum of 13+; "disabled for users under 13" requires at least the Declared Age Range API |
+| 2026-09-09 | Uploads must target iOS 13 or later |
+| 2026-11-16 | Age rating questionnaire: Shared Location and Dating and Relationships (minimum 18+) must be declared with an update or questionnaire change |
+| 2027-01-12 | Every app must have those two declarations completed |
 
 **Freshness rule (CONVENTIONS principle 7), on EVERY use:** this file is only an
 INDEX, not a source. For any job based on a rule, first read the official page:
@@ -12,7 +24,7 @@ of the relevant rule. However recent the date is, this step is not skipped. If t
 is a difference, say so in the report under the heading "Rules changed" and suggest
 updating this file (number, title, condition, date). Without a network, the top of
 the report says "Apple's current rules could not be read; assessment is based on the
-list dated 2026-10-28".
+list dated 2026-11-05".
 
 Update checklist (when refreshing this file):
 - Rules page: numbers and titles (new / removed / moved)

@@ -1,0 +1,20 @@
+{
+  "name": "app-store-skills",
+  "description": "Claude Code skills for building, testing and shipping iPhone and iPad apps.",
+  "version": "1.1.0",
+  "author": {
+    "name": "Taha Efe Kuşoğlu"
+  },
+  "homepage": "https://github.com/tahaefekusoglu/app-store-skills",
+  "repository": "https://github.com/tahaefekusoglu/app-store-skills",
+  "license": "MIT",
+  "keywords": [
+    "ios",
+    "ipados",
+    "app-store",
+    "testing",
+    "swiftui",
+    "flutter",
+    "app-review"
+  ]
+}

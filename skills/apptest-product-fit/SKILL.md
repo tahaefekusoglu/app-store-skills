@@ -52,7 +52,7 @@ the App Store's public pages (PF-P2).
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 technology (is it a web wrapper?), `network`, unknown: "regulated field" (one question
 if needed).
 
@@ -78,7 +78,7 @@ if needed).
 ### 1. Static scan (seconds)
 
 ```sh
-python3 -I ~/.claude/skills/apptest-product-fit/scripts/product_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-product-fit/scripts/product_scan.py" <root> [--json]
 ```
 
 | ID | Topic | Severity |

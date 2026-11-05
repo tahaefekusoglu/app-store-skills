@@ -57,7 +57,7 @@ permission flow by hand, below).
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 `permissions` (permissions), `tracking` (tracking), `ads` (ads), `ai` (AI),
 `account` (account), `extensions` (extensions: each has its own Info.plist and
 privacy manifest), technology (Expo / Unity / MAUI: Info.plist is generated at
@@ -93,7 +93,7 @@ Experimental, and framework and test bundles (`profile.shipping_info_plists`).
 ### 1. Static scan (seconds)
 
 ```sh
-python3 -I ~/.claude/skills/apptest-privacy-permissions/scripts/privacy_scan.py <root> [--json] [--policy-url <privacy_url>]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-privacy-permissions/scripts/privacy_scan.py" <root> [--json] [--policy-url <privacy_url>]
 ```
 
 | ID | Topic | Severity |

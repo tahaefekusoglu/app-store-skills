@@ -52,7 +52,7 @@ simulator, with demo data.
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 technology, `languages` (languages; IA-12 matters if any use a comma decimal),
 `purchases` (purchases; a double tap on a pay button is the most expensive).
 
@@ -79,7 +79,7 @@ technology, `languages` (languages; IA-12 matters if any use a comma decimal),
 ### 1. Static scan (seconds)
 
 ```sh
-python3 -I ~/.claude/skills/apptest-input-actions/scripts/input_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-input-actions/scripts/input_scan.py" <root> [--json]
 ```
 
 | ID | Topic | Severity |

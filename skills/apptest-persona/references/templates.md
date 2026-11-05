@@ -191,7 +191,6 @@ Future<List<String>> runPersona(WidgetTester t, Persona p, int seed, {bool devic
   t.platformDispatcher.textScaleFactorTestValue = p.scale;
   addTearDown(t.platformDispatcher.clearTextScaleFactorTestValue);
   final sem = t.ensureSemantics();               // the tree is not on by itself on a device
-  addTearDown(sem.dispose);
   final rnd = Random(seed * 31 + p.name.length), out = <String>['=== ${p.name} · seed $seed'];
   // openApp: the app's own dependency override path: in-memory data (seeded history if p.rich),
   // fixed clock, purchase / external link / notification fakes (T2). Write it per project.
@@ -256,6 +255,7 @@ Future<List<String>> runPersona(WidgetTester t, Persona p, int seed, {bool devic
     }
     out.add('${ok ? '✓' : '✗ PE-20'} ${g.name}: $steps steps, $dead dead, $backs back');
   }
+  sem.dispose();                                 // here, not in addTearDown: Flutter checks before tear-downs run
   return out;
 }
 ```
@@ -273,7 +273,7 @@ and the expected screen; run in the temporary simulator with screenshots + coord
 ## 4. Mac side (temporary simulator)
 
 ```sh
-SS=~/.claude/skills/apptest/shared/sim_session.py
+SS=<skills>/apptest/shared/sim_session.py
 python3 -I $SS create --project <root> --software-keyboard \
         --content-size accessibility-extra-extra-extra-large      # persona C; returns the UDID
 xcrun simctl privacy <UDID> revoke photos <bundle>               # the permission-denying persona (A, D)

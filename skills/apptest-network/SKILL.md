@@ -55,7 +55,7 @@ reads. Production servers, real accounts and real user data are NOT used.
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` → `network` (network),
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` → `network` (network),
 `account` (account), `third_party_login` (third-party sign-in), `user_content`
 (user content; content on a server → content-safety), `ai` (AI; remote
 model → privacy-permissions PP-30).
@@ -87,7 +87,7 @@ model → privacy-permissions PP-30).
 ### 1. Static scan (seconds)
 
 ```sh
-python3 -I ~/.claude/skills/apptest-network/scripts/network_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-network/scripts/network_scan.py" <root> [--json]
 ```
 
 | ID | Topic | Severity |

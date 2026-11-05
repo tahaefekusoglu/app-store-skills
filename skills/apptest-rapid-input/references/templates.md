@@ -90,7 +90,7 @@ void main() {
     await t.tap(find.byKey(const Key('save')));
     await t.pump();
     await t.binding.handlePopRoute();                // system back
-    await t.pump();
+    await t.pumpAndSettle();                         // let the page really close, or the bug stays hidden
     repo.gate.complete();
     await t.pumpAndSettle();
     expect(t.takeException(), isNull);               // no setState / context on the closed screen

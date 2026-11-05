@@ -59,7 +59,7 @@ registry and reverted (§7).
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 `languages` (the languages flag; with one language LT-40 does not apply; with a
 right-to-left language, LT-30 and the RTL tour apply), technology (tour
 commands below).
@@ -90,11 +90,11 @@ commands below).
 ### 1. Static scan (seconds)
 
 ```sh
-python3 -I ~/.claude/skills/apptest-locale-time/scripts/locale_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-locale-time/scripts/locale_scan.py" <root> [--json]
 ```
 
 For missing / untranslated keys and placeholder mismatches:
-`python3 -I ~/.claude/skills/apptest-copy-audit/scripts/copy_inventory.py <root> --out <temp>`
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest-copy-audit/scripts/copy_inventory.py" <root> --out <temp>`
 
 | ID | Topic | Severity |
 |---|---|---|

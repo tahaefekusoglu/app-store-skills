@@ -56,7 +56,7 @@ documented harmless test strings (CS-P1).
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 `user_content`, `ai`, `ads`, `purchases`, health among the
 permissions; "unknown: target age / Kids category" (one question if needed).
 
@@ -83,7 +83,7 @@ permissions; "unknown: target age / Kids category" (one question if needed).
 ### 1. Static scan (seconds)
 
 ```sh
-python3 -I ~/.claude/skills/apptest-content-safety/scripts/content_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-content-safety/scripts/content_scan.py" <root> [--json]
 ```
 
 | ID | Topic | Severity |
@@ -91,6 +91,7 @@ python3 -I ~/.claude/skills/apptest-content-safety/scripts/content_scan.py <root
 | CS-10 | User content or messaging present; report / block / filter / contact missing | REJECTION RISK (1.2) |
 | CS-11 | No report or feedback path for generative AI output | SUGGESTION |
 | CS-12 | Items that may be "yes" on the age rating questionnaire (inventory with evidence) | INFO (2.3.6) |
+| CS-16 | Social media signs, no Declared Age Range API (needed for "disabled for users under 13") | SUGGESTION |
 | CS-13 | Gambling or game of chance wording (rejection risk if there are purchases or payments) | REJECTION RISK / SUGGESTION (5.3) |
 | CS-14 | Medical or diagnostic wording | SUGGESTION (1.4.1) |
 | CS-15 | Wording aimed at kids (+ third-party analytics / ads) | REJECTION RISK / INFO (1.3, 5.1.4) |

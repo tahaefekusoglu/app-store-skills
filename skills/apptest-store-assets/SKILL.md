@@ -56,7 +56,7 @@ PID (no `pkill -f`), settings registry. Heavy job: time estimate and approval (�
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 `platforms` (iPad → the 13" iPad set is required), `languages` (one set per
 language), technology (tour tool, `references/shot-tour.md`).
 
@@ -73,7 +73,7 @@ language), technology (tour tool, `references/shot-tour.md`).
 This member's "test" is checking the images:
 
 ```sh
-python3 -I ~/.claude/skills/apptest-store-assets/scripts/assets_check.py <image_folder> [--ipad] [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-store-assets/scripts/assets_check.py" <image_folder> [--ipad] [--json]
 ```
 
 | ID | Topic | Severity |

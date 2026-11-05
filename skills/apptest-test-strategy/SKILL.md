@@ -51,7 +51,7 @@ CONVENTIONS §5. Read-only.
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 technology (tools and commands), `has_tests`, test flags, CI files;
 capabilities (risk areas).
 
@@ -76,7 +76,7 @@ capabilities (risk areas).
 ### 1. Static scan (seconds)
 
 ```sh
-python3 -I ~/.claude/skills/apptest-test-strategy/scripts/strategy_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-test-strategy/scripts/strategy_scan.py" <root> [--json]
 ```
 
 | Id | Topic | Severity |

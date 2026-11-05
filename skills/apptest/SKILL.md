@@ -46,7 +46,7 @@ without approval.
 ## Step 1: Profile
 
 ```sh
-python3 -I ~/.claude/skills/apptest/shared/profile.py <project_root>
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <project_root>
 ```
 
 Read-only. The "summary flags" in the output say which members are relevant (table
@@ -139,7 +139,7 @@ input-actions." The user chooses.
 2. Give a time estimate (quick: scan only ~5–15 min; full: with simulator
    tours 30–90 min). The user chooses.
 3. **All static scans with one command:**
-   `python3 -I ~/.claude/skills/apptest/shared/run_all.py <root> --check-links`
+   `python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/run_all.py" <root> --check-links`
    (one report, the same place once, suppressed items are counted). Then the
    verification, manual list and simulator steps in each member's SKILL.md.
    Order (all members ready; if a ⏳ member is added later, use the interim path below):

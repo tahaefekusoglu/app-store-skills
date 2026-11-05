@@ -60,7 +60,7 @@ language and rules (CLAUDE.md, theme files, Git flow).
 2. **Read the HIG:**
 
    ```sh
-   H=~/.claude/skills/apple-design-audit/scripts/hig.py
+   H="${CLAUDE_SKILL_DIR}/../apple-design-audit/scripts/hig.py"
    python3 -I $H read design-principles
    python3 -I $H read designing-for-ios   # per target
    python3 -I $H find "<topic>"           # related components and patterns

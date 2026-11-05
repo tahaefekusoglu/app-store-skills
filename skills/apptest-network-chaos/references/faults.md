@@ -42,7 +42,7 @@ https://developer.apple.com/documentation/bundleresources/information-property-l
 Rule text matches "METHOD /path?query":
 
 ```sh
-python3 -I ~/.claude/skills/apptest-network-chaos/scripts/nc_proxy.py \
+python3 -I <skills>/apptest-network-chaos/scripts/nc_proxy.py \
   --upstream https://staging.api.example.com --port 8899 --log ~/.cache/apptest/<key>/nc.jsonl \
   --rule '^POST /v1/orders' 'drop@1' \
   --rule '^GET /v1/feed' 'delay:4000' \

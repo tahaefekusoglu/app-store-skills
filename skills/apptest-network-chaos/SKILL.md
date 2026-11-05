@@ -73,13 +73,13 @@ principle 7 applies: the rule's current text is read.
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` → `network`
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` → `network`
 (if absent the member does not apply), `account` (NC-S6), technology (template).
 
 ## Scan
 
 ```sh
-python3 -I ~/.claude/skills/apptest-network-chaos/scripts/nc_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-network-chaos/scripts/nc_scan.py" <root> [--json]
 ```
 
 | Id | What | Severity |
@@ -98,10 +98,10 @@ the project: NC-S3 shows whether every request is covered.
 ## Proxy
 
 ```sh
-python3 -I ~/.claude/skills/apptest-network-chaos/scripts/nc_proxy.py \
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-network-chaos/scripts/nc_proxy.py" \
   --upstream <mock / staging server> [--port 8899] \
   [--rule '<regex "METHOD /path">' '<fault[@N]>' …] [--rate 1.0] [--seed 1] [--log <file>]
-python3 -I ~/.claude/skills/apptest-network-chaos/scripts/nc_proxy.py --self-test
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-network-chaos/scripts/nc_proxy.py" --self-test
 ```
 
 Faults: `pass`, `delay:MS`, `status:CODE`, `drop`, `reset`, `hang:SEC`,

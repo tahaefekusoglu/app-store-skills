@@ -63,7 +63,7 @@ public pages (read-only).
 ## Profile
 
 ```sh
-python3 -I ~/.claude/skills/apptest/shared/profile.py <root>
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>
 ```
 
 From the flags: `platforms` (platforms; iPad → SR-23, the iPad set in SR-81;
@@ -115,8 +115,8 @@ user 10–20 min.
 2. **Profile** (above).
 3. **Automatic scan:**
    ```sh
-   python3 -I ~/.claude/skills/apptest-store-readiness/scripts/readiness_scan.py <root>
-   python3 -I ~/.claude/skills/apptest-store-readiness/scripts/readiness_scan.py <root> --check-links
+   python3 -I "${CLAUDE_SKILL_DIR}/../apptest-store-readiness/scripts/readiness_scan.py" <root>
+   python3 -I "${CLAUDE_SKILL_DIR}/../apptest-store-readiness/scripts/readiness_scan.py" <root> --check-links
    ```
    The output is CANDIDATES: verify each item by reading the file (principle 6).
    E.g. SR-31 may be covered by a package's own manifest; SR-41 may be used
@@ -140,6 +140,8 @@ user 10–20 min.
 | ID | Topic | Rule |
 |---|---|---|
 | SR-10 / 11 | No main icon set · TRANSPARENT pixels in the 1024 px icon (REJECTION RISK) or an opaque alpha channel (SUGGESTION) or wrong size | T-02 |
+| SR-09 | No iOS project in the repo yet: checks that need one are skipped (info) | — |
+| SR-13 | Info.plist cannot be read: permission and settings checks would be empty (USER BUG) | — |
 | SR-12 | Main icon generated at build time (Icon Composer `.icon`, MAUI) — info | T-02 |
 | SR-20 | No encryption declaration (SUGGESTION) | T-04 |
 | SR-21 | Usage description empty / placeholder | 5.1.1(ii) |
@@ -154,6 +156,7 @@ user 10–20 min.
 | SR-41 | Development / staging server address | 2.1 |
 | SR-50 / 51 | No privacy / support link · does not open | 5.1.1(i), 1.5 |
 | SR-60 | Version numbers (info) | T-05 |
+| SR-61 | iOS deployment target below the current minimum (iOS 13 since 2026-09-09) | Upcoming Requirements |
 
 Manual list IDs: SR-70 … SR-94 (`references/asc-checklist.md`),
 TestFlight: SR-95 … SR-100 (`references/testflight.md`).

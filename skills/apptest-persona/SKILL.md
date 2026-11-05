@@ -78,14 +78,14 @@ touches a rule (e.g. crash → 2.1), principle 7 applies to that item.
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 technology (template), `languages`, `purchases` / `subscriptions`, `account`, `network`,
 `permissions`, `has_tests`.
 
 ## Scan (plan and hooks)
 
 ```sh
-python3 -I ~/.claude/skills/apptest-persona/scripts/pe_plan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-persona/scripts/pe_plan.py" <root> [--json]
 ```
 
 - **PE-10** (INFO) Hooks that set a persona up: test entry point, in-memory

@@ -56,7 +56,7 @@ MEMBERS = [  # (code, folder, script)
     ("NC", "apptest-network-chaos", "nc_scan.py"),
 ]
 # store-assets checks an IMAGE FOLDER (not the project root), so run it separately:
-#   python3 -I ~/.claude/skills/apptest-store-assets/scripts/assets_check.py <folder>
+#   python3 -I <skills>/apptest-store-assets/scripts/assets_check.py <folder>
 ORDER = {"REJECTION RISK": 0, "USER BUG": 1, "SUGGESTION": 2, "INFO": 3}
 # Pairs where two members report the same bug from their own angle. If not listed, it is a separate issue even on the same line.
 SAME_ISSUE = {frozenset(x) for x in (("TS-12", "TH-14"), ("TS-16", "TH-11"), ("SR-41", "NW-13"), ("SR-21", "PP-12"))}

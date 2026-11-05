@@ -51,7 +51,7 @@ free disk check; time estimate and approval (§6).
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` → technology
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` → technology
 (tour tool), `platforms` (iPad → also an iPad simulator), permissions (denial
 path), `languages`.
 
@@ -70,9 +70,9 @@ path), `languages`.
 ### 1. Session
 
 ```sh
-U=$(python3 -I ~/.claude/skills/apptest/shared/sim_session.py create --project <root> --software-keyboard)
+U=$(python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/sim_session.py" create --project <root> --software-keyboard)
 # … tour …
-python3 -I ~/.claude/skills/apptest/shared/sim_session.py cleanup --project <root> --udid "$U"
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/sim_session.py" cleanup --project <root> --udid "$U"
 ```
 
 `--software-keyboard`: makes the on-screen keyboard really open (for keyboard scenarios);

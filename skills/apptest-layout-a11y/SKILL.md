@@ -59,7 +59,7 @@ when the tour deletes its own simulator).
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 `platforms` (iPad → LA-50 and an iPad tour; Mac/Vision → LA-51),
 `languages` (tour with the longest translation too; RTL tour if there is a
 right-to-left language), technology (choice of audit tool, below).
@@ -86,7 +86,7 @@ right-to-left language), technology (choice of audit tool, below).
 ### 1. Static scan (seconds)
 
 ```sh
-python3 -I ~/.claude/skills/apptest-layout-a11y/scripts/layout_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-layout-a11y/scripts/layout_scan.py" <root> [--json]
 ```
 
 Output is a CANDIDATE: verify each line by opening the code (principle 6). Known
@@ -100,6 +100,7 @@ background. If intentional, write "intentional (reason)" in the report.
 | LA-11 | Fixed point size text (SwiftUI/UIKit; does not grow) | SUGGESTION |
 | LA-20 | No label on a tappable element without text (Flutter IconButton, RN Pressable) | USER BUG |
 | LA-21 | Many SF Symbols, few labels (density) | SUGGESTION |
+| LA-22 | SwiftUI button whose whole label is a symbol, with no accessibility label | SUGGESTION (a11y) |
 | LA-30 | Tap target shrunk below 44 pt | USER BUG |
 | LA-40 | Appearance fixed (light/dark): info | INFO |
 | LA-41 | Scattered fixed colors, few adaptive colors (palette file excluded) | SUGGESTION |

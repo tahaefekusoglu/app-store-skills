@@ -55,7 +55,7 @@ device / simulator is not touched.
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 `capability:database` (the database capability), `account` (account), iCloud
 capabilities; technology (the migration mechanism varies by technology).
 
@@ -90,7 +90,7 @@ capabilities; technology (the migration mechanism varies by technology).
 ### 1. Static scan (seconds)
 
 ```sh
-python3 -I ~/.claude/skills/apptest-data-integrity/scripts/data_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-data-integrity/scripts/data_scan.py" <root> [--json]
 ```
 
 | ID | Topic | Severity |

@@ -1,0 +1,16 @@
+{
+  "name": "app-store-skills",
+  "owner": {
+    "name": "Taha Efe Kuşoğlu"
+  },
+  "plugins": [
+    {
+      "name": "app-store-skills",
+      "source": "./",
+      "description": "Claude Code skills for building, testing and shipping iPhone and iPad apps."
+    }
+  ],
+  "metadata": {
+    "description": "Claude Code skills for building, testing and shipping iPhone and iPad apps."
+  }
+}

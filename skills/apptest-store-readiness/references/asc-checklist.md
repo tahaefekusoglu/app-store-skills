@@ -23,7 +23,7 @@ Grade: **Required** = Apple requires it (if missing, cannot submit or rejected) 
 |---|---|---|
 | SR-73 | Name (30 characters) and subtitle (30): no other brands, prices or "best" claims (2.3.7) | Required |
 | SR-74 | Primary / secondary category fit the app | Required |
-| SR-75 | Age rating questionnaire answered honestly in its CURRENT version (2.3.6), including the AI / user content / web access questions | Required |
+| SR-75 | Age rating questionnaire answered honestly in its CURRENT version (2.3.6), including Social Media, Shared Location and Dating and Relationships (`shared/rejections.md` has the dates), and the AI / user content / web access questions | Required |
 | SR-76 | Content rights (third-party content) declaration | Required |
 | SR-77 | Privacy policy URL opens and describes what the app does (5.1.1(i)) | Required |
 
@@ -60,7 +60,7 @@ Grade: **Required** = Apple requires it (if missing, cannot submit or rejected) 
 | ID | Item | Grade |
 |---|---|---|
 | SR-91 | Build is not "Missing Compliance": encryption question answered (or declared in Info.plist) | Required |
-| SR-92 | Build compiled to Apple's current minimum Xcode / SDK requirement (developer.apple.com/news) | Required |
+| SR-92 | Build compiled to Apple's current minimum Xcode / SDK requirement (developer.apple.com/news/upcoming-requirements) | Required |
 | SR-93 | Version number matches the ASC version; build number greater than previous ones | Required |
 | SR-94 | No ITMS warnings in the post-upload email (privacy manifest, usage description, SDK signature) | Required |
 

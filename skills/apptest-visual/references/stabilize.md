@@ -51,7 +51,7 @@ Capture paths (whichever the project has):
 ## 3. Compare
 
 ```sh
-python3 -I ~/.claude/skills/apptest-visual/scripts/vi_diff.py <base> <new> --out <diff> \
+python3 -I <skills>/apptest-visual/scripts/vi_diff.py <base> <new> --out <diff> \
         --mask-top 0 --tolerance 8 [--mask-file masks.json] [--max-ratio 0]
 ```
 

@@ -52,7 +52,7 @@ estimate (§6).
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` → test flags,
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` → test flags,
 technology (test tool).
 
 ## Setup (good to know from the start)
@@ -72,7 +72,7 @@ technology (test tool).
 ### 1. Static scan (seconds)
 
 ```sh
-python3 -I ~/.claude/skills/apptest-test-health/scripts/health_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-test-health/scripts/health_scan.py" <root> [--json]
 ```
 
 | Id | Topic | Severity |

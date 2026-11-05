@@ -65,7 +65,7 @@ money are NOT used (MO-P1).
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 `purchases` (purchases), `subscriptions` (subscription), `ads` (ads); from the
 dependencies, an intermediary such as RevenueCat / Adapty (then product
 configuration also lives in their dashboard).
@@ -100,7 +100,7 @@ configuration also lives in their dashboard).
 ### 1. Static scan (seconds)
 
 ```sh
-python3 -I ~/.claude/skills/apptest-monetization/scripts/monetization_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-monetization/scripts/monetization_scan.py" <root> [--json]
 ```
 
 | ID | Topic | Severity |

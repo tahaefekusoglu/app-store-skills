@@ -48,6 +48,12 @@ UIKIT_FIXED_FONT = re.compile(r"UIFont\.(systemFont|boldSystemFont|monospacedDig
 FLUTTER_ICONBUTTON = re.compile(r"\bIconButton\s*\(")
 RN_PRESSABLE = re.compile(r"<\s*(TouchableOpacity|TouchableHighlight|TouchableWithoutFeedback|Pressable)\b")
 
+# --- LA-22: SwiftUI button whose whole label is a symbol. The body must hold nothing but the image.
+SWIFT_ICON_BUTTON = re.compile(r"\bButton\s*(?:\([^()]*(?:\([^()]*\)[^()]*)*\))?\s*(?:label\s*:\s*)?\{\s*"
+                               r"Image\(\s*systemName\s*:\s*\"[^\"]+\"\s*\)"
+                               r"(?:\s*\.\w+(?:\([^(){}]*\))?)*\s*\}")
+SWIFT_A11Y_LABEL = re.compile(r"accessibilityLabel|accessibility\(label")
+
 # --- LA-30: small tap target
 SMALL_TAP = [
     # Both dimensions must be below 44 (0 = "fit content", sets no limit).
@@ -202,6 +208,14 @@ def main(argv=None):
                 rep.add("LA-20", "USER BUG", "No accessibilityLabel on a tappable element without text",
                         f"{p.rel(f)}:{n}", "If it holds only an icon, VoiceOver just says 'button'.")
     sw = by_lang.get("swift", [])
+    for f in sw:
+        text = scan.p_read(f)
+        for m in SWIFT_ICON_BUTTON.finditer(text):
+            if not SWIFT_A11Y_LABEL.search(text[m.start():m.end() + 160]):
+                rep.add("LA-22", "SUGGESTION", "Icon-only button without an accessibility label",
+                        f"{p.rel(f)}:{text.count(chr(10), 0, m.start()) + 1}",
+                        "VoiceOver falls back to the symbol's name, or says only 'button'. Add .accessibilityLabel, "
+                        "or use Label with .labelStyle(.iconOnly).")
     icon_only, _ = scan.count(p, r"Image\(\s*systemName\s*:", files=sw)
     labels, _ = scan.count(p, r"accessibilityLabel|accessibility\(label|Label\(", files=sw)
     if icon_only > 20 and labels < icon_only / 10:

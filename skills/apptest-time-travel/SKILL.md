@@ -64,14 +64,14 @@ test suite several times: time estimate and approval (§6).
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 technology, test framework (`has_tests`), notification capability.
 
 ## Scan
 
 ```sh
-python3 -I ~/.claude/skills/apptest-time-travel/scripts/tt_scan.py <root> [--json]
-python3 -I ~/.claude/skills/apptest-time-travel/scripts/tt_scan.py --moments --tz Europe/Berlin --tz America/Los_Angeles --year 2026
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-time-travel/scripts/tt_scan.py" <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-time-travel/scripts/tt_scan.py" --moments --tz Europe/Berlin --tz America/Los_Angeles --year 2026
 ```
 
 - **TT-10** (INFO) whether a clock hook exists, and its first location.

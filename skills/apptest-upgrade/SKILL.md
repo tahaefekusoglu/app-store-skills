@@ -50,7 +50,7 @@ heavy work (builds take minutes): time estimate and approval (§6).
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 database capability, technology (build command), `setting:version`.
 
 ## Setup (good to know from day one)
@@ -77,10 +77,10 @@ old version to current with FULL data (DI-P2).
 git worktree add <temp>/wt-old <old-tag>
 #   Flutter:  (cd <temp>/wt-old && flutter build ios --simulator --debug)
 #   Native:   xcodebuild -scheme <scheme> -sdk iphonesimulator -configuration Debug -derivedDataPath <temp>/dd build
-U=$(python3 -I ~/.claude/skills/apptest/shared/sim_session.py create --project <root>)
-python3 -I ~/.claude/skills/apptest-upgrade/scripts/upgrade_tour.py --udid $U --bundle <bundle_id> \
+U=$(python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/sim_session.py" create --project <root>)
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-upgrade/scripts/upgrade_tour.py" --udid $U --bundle <bundle_id> \
     --old <old.app> --new <new.app> [--seed "<data entry command>"] [--verify "<verify command>"]
-python3 -I ~/.claude/skills/apptest/shared/sim_session.py cleanup --project <root> --udid "$U"
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/sim_session.py" cleanup --project <root> --udid "$U"
 ```
 
 The script: installs and launches the old version → data is entered (`--seed` command or

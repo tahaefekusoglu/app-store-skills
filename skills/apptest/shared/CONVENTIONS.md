@@ -1,6 +1,6 @@
 # apptest: shared rules
 
-Version: 1.8.0 (2026-11-03; 1.4: portability · 1.5: live app audit · 1.6: honest status, §10 · 1.7: templates are proven by running them · 1.8: English sources, user-language output). All members of the family follow this file;
+Version: 1.9.0 (2026-11-05; 1.9: install-agnostic paths, dated Apple requirements · 2026-11-03; 1.4: portability · 1.5: live app audit · 1.6: honest status, §10 · 1.7: templates are proven by running them · 1.8: English sources, user-language output). All members of the family follow this file;
 each member states the lowest version it is compatible with in its SKILL.md ("≥ 1.2").
 When this file changes the version goes up: additions / clarifications only → MINOR
 version (1.2 → 1.3, members stay compatible); a change that alters or removes a rule
@@ -116,15 +116,15 @@ If a stage is meaningless for a member, its section says "Nothing to do at this 
 Every member reads the profile when it starts:
 
 ```sh
-python3 -I ~/.claude/skills/apptest/shared/profile.py <project_root>          # markdown
-python3 -I ~/.claude/skills/apptest/shared/profile.py <project_root> --json   # for machines
+python3 -I <skills>/apptest/shared/profile.py <project_root>          # markdown
+python3 -I <skills>/apptest/shared/profile.py <project_root> --json   # for machines
 ```
 
 The script only reads and never writes to the project. To run all members' static scans
 at once, in one report (the same place from two members appears once):
 
 ```sh
-python3 -I ~/.claude/skills/apptest/shared/run_all.py <project_root> [--only SR,PP] [--json] [--check-links] [--policy-url URL]
+python3 -I <skills>/apptest/shared/run_all.py <project_root> [--only SR,PP] [--json] [--check-links] [--policy-url URL]
 ```
 
 This is a STATIC scan only; it does not replace principle 7 (Apple's current page),
@@ -134,8 +134,8 @@ Members that need a simulator use the shared session tool (§5.2–5.4, §7:
 temporary simulator, lock, ledger, undo):
 
 ```sh
-U=$(python3 -I ~/.claude/skills/apptest/shared/sim_session.py create --project <root> [--status-bar] [--software-keyboard])
-python3 -I ~/.claude/skills/apptest/shared/sim_session.py cleanup --project <root> --udid "$U"
+U=$(python3 -I <skills>/apptest/shared/sim_session.py create --project <root> [--status-bar] [--software-keyboard])
+python3 -I <skills>/apptest/shared/sim_session.py cleanup --project <root> --udid "$U"
 ```
 
 It reports findings at three confidences: **certain** (explicit in configuration),
@@ -249,7 +249,8 @@ Official sources (for freshness):
 - https://developer.apple.com/design/human-interface-guidelines/
 - https://developer.apple.com/documentation/bundleresources/privacy-manifest-files
 - https://developer.apple.com/help/app-store-connect/
-- https://developer.apple.com/news/ (new requirements, minimum SDK, SDK list)
+- https://developer.apple.com/news/upcoming-requirements/ (requirements with dates: minimum SDK, minimum iOS, age rating)
+- https://developer.apple.com/news/ (newly announced requirements, read for anything newer than the page above)
 
 ## §9 Suppressed items
 
@@ -331,3 +332,10 @@ suppressed, this line also says "(rejection risk)"; the warning is given once, w
   after "Step 0" (3–8 items, `<CODE>-P1` ...). They concern only that member's own risk or quality; they
   do not repeat or loosen family and group principles (principle 0). Test method members also follow
   `shared/test-methods.md`.
+
+## Paths
+
+Skills may be installed in `~/.claude/skills` or inside a plugin, so nothing assumes either place.
+`SKILL.md` files reach sibling skills with `${CLAUDE_SKILL_DIR}/../<skill>/...`, which Claude Code fills in.
+In every other file, `<skills>` means the folder that holds the skills: one level above the base directory
+Claude Code reports for the running skill. Replace it before running a command.

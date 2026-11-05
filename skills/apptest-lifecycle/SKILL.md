@@ -72,14 +72,14 @@ apply principle 7.
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 technology (template), `permissions`, `capability:biometric lock`,
 `capability:database`, notifications, `has_tests`.
 
 ## Scan
 
 ```sh
-python3 -I ~/.claude/skills/apptest-lifecycle/scripts/lc_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-lifecycle/scripts/lc_scan.py" <root> [--json]
 ```
 
 | Id | What | Severity |

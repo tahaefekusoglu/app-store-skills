@@ -70,13 +70,13 @@ recommended. Disk: full-size PNG ~0.5–1.5 MB; 20 screens × 16 = ~300 MB per s
 
 ## Profile
 
-`python3 -I ~/.claude/skills/apptest/shared/profile.py <root>` →
+`python3 -I "${CLAUDE_SKILL_DIR}/../apptest/shared/profile.py" <root>` →
 `languages`, `platforms` (iPad), technology (golden tool).
 
 ## Scan
 
 ```sh
-python3 -I ~/.claude/skills/apptest-visual/scripts/vi_scan.py <root> [--json]
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-visual/scripts/vi_scan.py" <root> [--json]
 ```
 
 | Id | What | Severity |
@@ -90,9 +90,9 @@ python3 -I ~/.claude/skills/apptest-visual/scripts/vi_scan.py <root> [--json]
 ## Comparison
 
 ```sh
-python3 -I ~/.claude/skills/apptest-visual/scripts/vi_diff.py <base> <new> --out <diff_folder> \
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-visual/scripts/vi_diff.py" <base> <new> --out <diff_folder> \
         [--tolerance 8] [--max-ratio 0] [--mask-top <px>] [--mask x,y,w,h] [--mask-file masks.json] [--json]
-python3 -I ~/.claude/skills/apptest-visual/scripts/vi_diff.py --self-test
+python3 -I "${CLAUDE_SKILL_DIR}/../apptest-visual/scripts/vi_diff.py" --self-test
 ```
 
 Files are matched by relative path. Exit code 0 = no difference above threshold,

@@ -120,7 +120,7 @@ def check_icons(p):
                  and os.path.basename(os.path.dirname(f))[:-5] in names]
     sets = [f for f in p.files if f.endswith(".appiconset/Contents.json") and prof.ios_path(f)
             and os.path.basename(os.path.dirname(f))[:-len(".appiconset")] in names
-            and not any(f.startswith(d + os.sep) for d in ext_dirs)
+            and not any(f.startswith(d + "/") for d in ext_dirs)
             and not re.search(r"(?i)(extension|widget|watch|notification|intents|sticker|imessage|previews?/|"
                               r"appclip|demo|sample)", p.rel(f))]
     if icon_docs and not sets:
@@ -520,6 +520,41 @@ def check_links(p, do_fetch):
 
 # ------------------------------------------------------------------ version
 
+MIN_IOS = 13  # Apple: uploads must target iOS 13 or later, since 2026-09-09.
+
+
+NOT_THE_APP = re.compile(r"(?i)(^|/)(pods|carthage|sourcepackages|checkouts|\.build|node_modules|"
+                         r"third_?party|vendor|samples?|examples?|demos?|\w*tests?)(/|$)")
+TEST_TARGET = re.compile(r"\b(TEST_HOST|BUNDLE_LOADER|TEST_TARGET_NAME)\s*=")
+
+
+def check_deployment_target(p):
+    """SR-61. What ships counts: the app's own project and Podfile, not samples, dependencies or test
+    targets. A Swift package's minimum is not the app's either."""
+    for f in p.files:
+        rel = p.rel(f)
+        if not prof.ios_path(f) or NOT_THE_APP.search(os.path.dirname(rel)):
+            continue
+        base = os.path.basename(f)
+        if base == "project.pbxproj":
+            text = read(f, 8_000_000)
+            if "com.apple.product-type.application" not in text:
+                continue  # a library's project: its minimum does not limit the app
+            found = []
+            for body, _name in prof.build_configs(text):
+                if not TEST_TARGET.search(body):
+                    found += re.findall(r"IPHONEOS_DEPLOYMENT_TARGET\s*=\s*\"?(\d+)(?:\.\d+)*\"?\s*;", body)
+        elif base == "Podfile":
+            found = re.findall(r"(?m)^\s*platform\s*:ios\s*,\s*['\"](\d+)(?:\.\d+)*['\"]", read(f))
+        else:
+            continue
+        low = min((int(v) for v in found), default=MIN_IOS)
+        if low < MIN_IOS:
+            add("SR-61", "REJECTION RISK", f"iOS deployment target {low} is below iOS {MIN_IOS}", rel,
+                "Since 2026-09-09 App Store Connect accepts only uploads that target iOS 13 or later. "
+                "Check Apple's Upcoming Requirements page for the current minimum.")
+
+
 def check_versions(p):
     vals = {k: v["value"] for k, v in p.items.items() if k.startswith("setting:version")}
     if vals:
@@ -548,6 +583,7 @@ def main(argv=None):
         check_privacy_manifest(p)
         check_links(p, a.check_links)
     check_placeholders(p)
+    check_deployment_target(p)
     check_versions(p)
     order = {"REJECTION RISK": 0, "USER BUG": 1, "SUGGESTION": 2, "INFO": 3}
     suppressed = scanlib.load_suppressed(p.root)  # CONVENTIONS §9
